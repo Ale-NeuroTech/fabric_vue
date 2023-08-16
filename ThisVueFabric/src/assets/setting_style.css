@@ -1,0 +1,25 @@
+/*
+
+設定画面用
+
+*/
+
+.setting_menu_header {
+    width: 90vh;
+  }
+  
+  .setting_menu_main {
+    display: flex;
+    flex-direction: column;
+    max-width: none;
+    width: 90vw;
+  }
+  
+  .setting_menu_content {
+    flex-grow: 1;
+  }
+  
+  .setting_menu_footer {
+    width: 90vh;
+  }
+  

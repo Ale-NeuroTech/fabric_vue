@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import FabricCanvas from '../components/segaCanvas.vue';
+import FabricCanvas from '../components/FabricCanvas.vue';
 
 export default {
   components: {
@@ -13,7 +13,7 @@ export default {
 },
   methods: {
     irAFabric() {
-      this.$router.push('/segasamy');
+      this.$router.push('/map');
     }
   }
 }
