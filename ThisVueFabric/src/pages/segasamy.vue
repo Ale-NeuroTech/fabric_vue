@@ -1,15 +1,15 @@
 <template>
     <div>
-        <FabricCanvas />
+        <SegaCanvas />
     </div>
 </template>
 
 <script>
-import FabricCanvas from '../components/FabricCanvas.vue';
+import SegaCanvas from '../components/segaCanvas.vue';
 
 export default {
   components: {
-    FabricCanvas,
+    SegaCanvas,
 },
   methods: {
     irAFabric() {
