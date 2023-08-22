@@ -4,6 +4,8 @@
         <div class="canvas-container" id="canvas-container">
             <canvas id="canvas_view"></canvas>
         </div>
+
+
         <div id="canvas-header" style="display: none; background-color: #a6a7a9">
 
             <div>
@@ -19,17 +21,23 @@
         <div class="canvas2-container" id="canvas2-container">
             <canvas id="canvas_view2"></canvas>
         </div>
+
+
     </div>
 </template>
 
 <script>
 import { fabric } from 'fabric';
 export default {
+
     props: {
-        mapWidth: Number,
-        mapHeight: Number,
+        map_width: Number,
+        map_height: Number,
         grid: Number,
+        unitScale: Number,
         gameMode: Number,
+        stencilMenuWidth: Number,
+        canvasScale: Number,
         newMachineApiData: Array,
         stockMachineApiData: Array,
         testBaseData: {
@@ -44,14 +52,18 @@ export default {
             type: Object,
         },
         images: Array,
-    },
 
+
+    },
 
     data() {
         return {
             canvas: null,
             canvas2: null,
             animationObjectList: [],
+            
+            canvasWidth: this.map_width * this.grid * this.unitScale,
+            canvasHeight: this.map_width * this.grid * this.unitScale,
         };
     },
 
@@ -136,6 +148,8 @@ export default {
             // scale
             this.canvas.setZoom(this.canvasScale);
 
+
+
             // ==========================================
             //  Grid Lineの追加
             // ==========================================
@@ -160,13 +174,13 @@ export default {
                             lockMovementY: true,
                             lockUniScaling: false,
                         }
-                    )
-                );
-                this.canvas.add(
-                    new fabric.Line(
-                        [this.stencilMenuWidth, i * this.grid, this.stencilMenuWidth + this.canvasWidth, i * this.grid],
-                        {
-                            type: "line",
+                        )
+                        );
+                        this.canvas.add(
+                            new fabric.Line(
+                                [this.stencilMenuWidth, i * this.grid, this.stencilMenuWidth + this.canvasWidth, i * this.grid],
+                                {
+                                    type: "line",
                             stroke: "#ccc",
                             grid_line: true,
                             selectable: false,
@@ -177,8 +191,8 @@ export default {
                             lockMovementY: true,
                             lockUniScaling: false,
                         }
-                    )
-                );
+                        )
+                        );
             }
             if (this.gameMode == "1") {
                 for (var i = 0; i < this.canvasWidth / this.grid; i++) {
@@ -225,7 +239,7 @@ export default {
             }
 
             // object 移動中
-            function objectMoving(cnvs, options) {
+            const objectMoving = (_cnvs, options) => {
                 // この判定の方法でいいのか?
                 //    console.log(options.target);
 
@@ -243,18 +257,18 @@ export default {
                     // フリーポジションのobjectが混じった時の対応を考えておく…
                     var _obj = options.target;
                     _obj.set({
-                        left: Math.round(_obj.left / grid) * grid,
-                        top: Math.round(_obj.top / grid) * grid,
+                        left: Math.round(_obj.left / this.grid) * this.grid,
+                        top: Math.round(_obj.top / this.grid) * this.grid,
                     });
-                    cnvs.requestRenderAll();
+                    this.cnvs.requestRenderAll();
                 } else {
                     //      console.log("object:moving");
                     var _obj = options.target;
                     _obj.set({
-                        left: Math.round(_obj.left / grid) * grid,
-                        top: Math.round(_obj.top / grid) * grid,
+                        left: Math.round(_obj.left / this.grid) * this.grid,
+                        top: Math.round(_obj.top / this.grid) * this.grid,
                     });
-                    cnvs.requestRenderAll();
+                    this.cnvs.requestRenderAll();
                 }
                 this.setTargetObjectAction(10);
             }
@@ -355,8 +369,8 @@ export default {
                     //    checkGameObjectCollision(_obj);
                     var _x00 = _obj.left;
                     var _y00 = _obj.top;
-                    var _x01 = _obj.left + _obj.width - (grid - 1);
-                    var _y01 = _obj.top + _obj.height - (grid - 1);
+                    var _x01 = _obj.left + _obj.width - (this.grid - 1);
+                    var _y01 = _obj.top + _obj.height - (this.grid - 1);
                     for (var ii = 0; ii < this.gameObjectList.length; ii++) {
                         if (this.gameObjectList.at(ii)) {
                             if (this.gameObjectList.at(ii).obj) {
@@ -400,13 +414,14 @@ export default {
             }
 
             // コントローラー形状変化
+            const self = this;
             function setControllerType(cnvs) {
 
                 // 遊技台設置
-                if (this.gameMode == "1") {
+                if (self.gameMode == "1") {
                     var ctrlF = 0;
                     var _obj = cnvs.getActiveObject();
-
+                    console.log(_obj);
                     if (!_obj.idx) {
                         if (_obj._objects) {
                             /* 効果なし？
@@ -478,7 +493,7 @@ export default {
 
                     var ctrlF = 0;
                     var _obj = cnvs.getActiveObject();
-
+                    console.log(_obj);
                     if (!_obj.idx) {
                         if (_obj._objects) {
                             console.log("group select");
@@ -595,10 +610,10 @@ export default {
 
             // object 選択開始
             const selectionCreated = (_cnvsID, cnvs, _options) => {
-                //console.log("selection:created");
-                this.setObjectPosition(cnvs);
-                this.setControllerType(cnvs);
-                this.setTargetObjectAction(1);
+                console.log("selection:created");
+                setObjectPosition(cnvs);
+                setControllerType(cnvs);
+                this.setTargetObjectAction(1); 
 
 
                 if (this.gameMode == "1") {
@@ -609,7 +624,7 @@ export default {
 
             // object 選択変更・更新
             function selectionUpdated(_cnvsID, cnvs) {
-                //console.log("selection:updated");
+                console.log("selection:updated");
                 setObjectPosition(cnvs);
                 setControllerType(cnvs);
                 this.setTargetObjectAction(2);
@@ -686,14 +701,14 @@ export default {
                                         } else {   //それ以外はそのまま
                                         }
                                     }
-                                    cnvs.requestRenderAll();
+                                    this.cnvs.requestRenderAll();
                                 }
                             } else {
                                 if (this.checkGameObjectTypeBOXES(_obj.idx)) {  //箱系
                                     console.log("scale...");
                                     console.log(_obj);
-                                    var _w = Math.floor(_obj.scaleX * _obj.width / grid) * grid;
-                                    var _h = Math.floor(_obj.scaleY * _obj.height / grid) * grid;
+                                    var _w = Math.floor(_obj.scaleX * _obj.width / this.grid) * this.grid;
+                                    var _h = Math.floor(_obj.scaleY * _obj.height / this.grid) * this.grid;
                                     _obj.set({
                                         width: _w,
                                         height: _h,
@@ -701,7 +716,7 @@ export default {
                                         scaleY: 1,
                                         strokeWidth: 1
                                     });
-                                    cnvs.requestRenderAll();
+                                    this.cnvs.requestRenderAll();
                                 }   //それ以外はそのまま
                             }
                         }
@@ -735,26 +750,29 @@ export default {
 
             //Double click function to print in the console the machine data
             //機械データをコンソールに印刷するダブルクリック機能
-            async function mouseDblclick(_cnvs, options) {
+            const mouseDblclick = (cnvs, options) => {
                 console.log("mouse:dblclick");
                 console.log(options.target);
-
+                console.log(this.gameMode);
                 if (this.gameMode == "1") {
                     if (options.target) {
                         var _idx = options.target.idx;
                         if (_idx) {
-                            if (await this.checkGameObjectTypeMACHINE_BOX_promise(_idx)) {
+                            if (this.checkGameObjectTypeMACHINE_BOX_promise(_idx)) {
                                 modalTargetObject = { idx: _idx, obj: options.target };
-                                //モーダル
+                                // モーダル
                                 this.infoMachineDialog(this.obj2_promise, options.target);
-                            } else if (this.checkGameObjectTypeNAMETEXT(_idx) || checkGameObjectTypeNAMETEXT_VERTICAL(_idx)) {
+                            } else if (
+                                this.checkGameObjectTypeNAMETEXT(_idx) ||
+                                checkGameObjectTypeNAMETEXT_VERTICAL(_idx)
+                            ) {
                                 modalTargetObject = { idx: _idx, obj: options.target };
                                 this.setTextDialog2();
                             }
                         }
                     }
                 }
-            }
+            };
 
 
             // ==========================================
@@ -779,6 +797,7 @@ export default {
                 this.$parent.mainStatus.targetCanvasID = 0;
                 selectionCreated(0, this.canvas, options);
             });
+
 
             this.canvas.on("selection:updated", () => {
                 this.$parent.mainStatus.targetCanvasID = 0;
@@ -806,13 +825,14 @@ export default {
             });
 
             this.canvas.on("mouse:dblclick", (options) => {
+                console.log("/////////////////dbl click");
                 this.$parent.mainStatus.targetCanvasID = 0;
                 mouseDblclick(this.canvas, options);
             });
             // ==========================================
             // canvas2
             // ==========================================
-            if (this.gameMode == "1") {
+            if (this.gameMode == "1") { 
                 this.canvas2.on("object:moving", function (options) {
                     this.mainStatus.targetCanvasID = 1;
                     objectMoving(this.canvas2, options);
@@ -1698,7 +1718,7 @@ export default {
                 });
                 _circle1.setCoords();
                 _circle2.setCoords();
-                canvas.requestRenderAll();
+                this.canvas.requestRenderAll();
             });
             _circle1.on('moving', function (_e) {
                 //        console.log("_circle1");
@@ -1734,7 +1754,7 @@ export default {
                     y2: _circle2.top
                 });
                 _line.setCoords();
-                canvas.requestRenderAll();
+                this.canvas.requestRenderAll();
             });
             _circle2.on('moving', function (_e) {
                 //        console.log("_circle2");
@@ -1750,7 +1770,7 @@ export default {
                     y2: _circle2.top
                 });
                 _line.setCoords();
-                canvas.requestRenderAll();
+                this.canvas.requestRenderAll();
             });
 
             //    canvas.add(_circle1);
@@ -2117,7 +2137,7 @@ export default {
                             this.stopObjectAnimation(_obj);
                             updateGameObjectAt_Machine(this.mainStatus.targetCanvasID, _obj.idx, _obj, 0, 0, null);
                             this.updateGameObjectAt_Color(_obj.idx, _obj, this.getGameObjectColorPalleteID(_obj.idx));
-                            _cnvs.requestRenderAll();
+                            this.cnvs.requestRenderAll();
                         }
                     }
                 }
@@ -2128,9 +2148,9 @@ export default {
 
                 var _cnvs = null;
                 if (this.mainStatus.targetCanvasID == 0) {
-                    _cnvs = canvas;
+                    _cnvs = this.canvas;
                 } else {
-                    _cnvs = canvas2;
+                    _cnvs = this.canvas2;
                 }
                 var _obj = _cnvs.getActiveObject();
                 if (_obj) {
@@ -2139,7 +2159,7 @@ export default {
                             this.stopObjectAnimation(_obj);
                             updateGameObjectAt_Machine(this.mainStatus.targetCanvasID, _obj.idx, _obj, _obj.machineGroup, _obj.machineType, _obj.serialID);
                             this.updateGameObjectAt_Color(_obj.idx, _obj, this.getGameObjectColorPalleteID(_obj.idx));
-                            _cnvs.requestRenderAll();
+                            this.cnvs.requestRenderAll();
                         }
                     }
                 }
@@ -2238,7 +2258,7 @@ export default {
             obj2.obj = _obj;
             _obj.idx = idx;
 
-            if (this.gameMode == this.GameMode.MODE_MACHINE_SET) {
+            if (this.gameMode == "1") {
                 setGameObjectMachineBoxColor(_canvasID, idx);
             }
         },
@@ -2396,7 +2416,7 @@ export default {
             copyObj.width = _obj.width;
             copyObj.height = _obj.height;
             copyObj.obj = _obj;
-            var idx = pushGameObjectList(copyObj);
+            var idx = this.pushGameObjectList(copyObj);
             _obj.idx = idx;
             console.log("idx = " + idx);
 
@@ -2597,9 +2617,9 @@ export default {
 
             var _cnvs = null;
             if (this.mainStatus.targetCanvasID == 0) {
-                _cnvs = canvas;
+                _cnvs = this.canvas;
             } else {
-                _cnvs = canvas2;
+                _cnvs = this.canvas2;
             }
             var _obj = _cnvs.getActiveObject();
             if (_obj) {
@@ -2613,7 +2633,7 @@ export default {
                         updateGameObjectAt_Machine(this.mainStatus.targetCanvasID, _obj.idx, _obj, 0, 0, null);
 
                         updateGameObjectAt_Color(_obj.idx, _obj, this.getGameObjectColorPalleteID(_obj.idx));
-                        _cnvs.requestRenderAll();
+                        this.cnvs.requestRenderAll();
                     }
                 }
             }
@@ -2626,9 +2646,9 @@ export default {
 
             var _cnvs = null;
             if (this.mainStatus.targetCanvasID == 0) {
-                _cnvs = canvas;
+                _cnvs = this.canvas;
             } else {
-                _cnvs = canvas2;
+                _cnvs = this.canvas2;
             }
             var _obj = _cnvs.getActiveObject();
             if (_obj) {
@@ -2639,7 +2659,7 @@ export default {
                         updateGameObjectAt_Machine(this.mainStatus.targetCanvasID, _obj.idx, _obj, _obj.machineGroup, _obj.machineType, _obj.serialID);
 
                         updateGameObjectAt_Color(_obj.idx, _obj, this.getGameObjectColorPalleteID(_obj.idx));
-                        _cnvs.requestRenderAll();
+                        this.cnvs.requestRenderAll();
                     }
                 }
             }
@@ -2652,9 +2672,9 @@ export default {
 
             var _cnvs = null;
             if (this.mainStatus.targetCanvasID == 0) {
-                _cnvs = canvas;
+                _cnvs = this.canvas;
             } else {
-                _cnvs = canvas2;
+                _cnvs = this.canvas2;
             }
             var _obj = _cnvs.getActiveObject();
             if (_obj) {
@@ -2665,7 +2685,7 @@ export default {
                             this.stopObjectAnimation(_obj);
                             updateGameObjectAt_Machine(this.mainStatus.targetCanvasID, _obj.idx, _obj, 0, 0, null);
 
-                            _cnvs.requestRenderAll();
+                            this.cnvs.requestRenderAll();
                         }
                     }
                 }
@@ -2675,7 +2695,7 @@ export default {
         ////////////// 島図遊技台テキスト変更
         um_changeMachineNo: function () {
             // 島図はcanvasしかない
-            var _obj = canvas.getActiveObject();
+            var _obj = this.canvas.getActiveObject();
             if (_obj) {
                 if (_obj.idx) {
                     if (checkGameObjectTypeMACHINE_BOX(_obj.idx)) {
@@ -2689,7 +2709,7 @@ export default {
         ////////////// 島図テキスト変更
         um_changeText: function () {
             // 現状ではcanvasのみ?
-            var _obj = canvas.getActiveObject();
+            var _obj = this.canvas.getActiveObject();
             if (_obj) {
                 if (_obj.idx) {
                     if (checkGameObjectTypeTEXT(_obj.idx)) {
@@ -2778,8 +2798,8 @@ export default {
             var y = Math.floor(element.scrollTop + (element.clientHeight / 2) / this.grid) * this.grid;;
             var txt = "遊技台名称";
             _text = this.addNameIText(txt, x, y, 20);
-            canvas.add(_text);
-            addGameObject(_text, this.ObjectType.NAME_TEXT, 0);
+            this.canvas.add(_text);
+            this.addGameObject(_text, this.ObjectType.NAME_TEXT, 0);
         },
 
         ////////////
@@ -2980,14 +3000,14 @@ export default {
             console.log("_item: ");
             console.log(_item);
             //Info modal
-            console.log(canvas.getActiveObject());
-            console.log(canvas2.getActiveObject());
+            console.log(this.canvas.getActiveObject());
+            console.log(this.canvas2.getActiveObject());
 
             var _cnvs = null;
             if (this.mainStatus.targetCanvasID == 0) {
-                _cnvs = canvas;
+                _cnvs = this.canvas;
             } else {
-                _cnvs = canvas2;
+                _cnvs = this.canvas2;
             }
 
 
@@ -3230,9 +3250,9 @@ export default {
 
             var _cnvs = null;
             if (this.mainStatus.targetCanvasID == 0) {
-                _cnvs = canvas;
+                _cnvs = this.canvas;
             } else {
-                _cnvs = canvas2;
+                _cnvs = this.canvas2;
             }
 
             stopObjectAnimation(_obj);
@@ -3251,7 +3271,7 @@ export default {
             console.log(insertS);
             //    const topSection = document.getElementById("top-section");
             removeMachineListButton(_btn, insertS);
-            _cnvs.requestRenderAll();
+            this.cnvs.requestRenderAll();
         },
 
         ///////////////画面分割
@@ -3273,8 +3293,8 @@ export default {
                 this.mainStatus.isSplit = true;
                 resetCanvasActiveObject();
 
-                this.removeFabricObject(1, canvas2, 2);    //前回分
-                createFabricObject(1, canvas2, 2);
+                this.removeFabricObject(1, this.canvas2, 2);    //前回分
+                createFabricObject(1, this.canvas2, 2);
                 floor_select.disabled = false;
 
             } else {
@@ -3300,7 +3320,7 @@ export default {
 
         ////////////// 色変更
         setColorMachineObject: function () {
-            var _obj = canvas.getActiveObject();
+            var _obj = this.canvas.getActiveObject();
 
             if (_obj) {
                 if (_obj.idx) {
@@ -3331,9 +3351,9 @@ export default {
                     }
                     var _cnvs = null;
                     if (this.mainStatus.targetCanvasID == 0) {
-                        _cnvs = canvas;
+                        _cnvs = this.canvas;
                     } else {
-                        _cnvs = canvas2;
+                        _cnvs = this.canvas2;
                     }
 
 
@@ -3387,7 +3407,7 @@ export default {
                         }
                     }
 
-                    _cnvs.requestRenderAll();
+                    this.cnvs.requestRenderAll();
 
                     /*
                         if(!element1.value || (element1.value == "")){
@@ -3718,16 +3738,16 @@ export default {
 
                     if (checkGameObjectTypeTEXT_VERTICAL(idx)) {
                         var _text = addITextGroup(element1.value, obj.left, obj.top, 20);
-                        canvas.add(_text);
+                        this.canvas.add(_text);
                         updateGameObjectAt_ReCreate(idx, _text);
 
                         // 古いほう削除
                         for (var ii = 0; ii < obj._objects.length; ii++) {
                             var _obj2 = obj._objects[ii];
-                            canvas.remove(_obj2);
+                            this.canvas.remove(_obj2);
                             _obj2 = null;
                         }
-                        canvas.remove(obj);
+                        this.canvas.remove(obj);
                         obj = null;
 
                     } else
@@ -3744,7 +3764,7 @@ export default {
                             obj.set({ text: element1.value });
                         }
 
-                    canvas.requestRenderAll();
+                    this.canvas.requestRenderAll();
 
                     /*
                         if(!element1.value || (element1.value == "")){
@@ -3819,12 +3839,12 @@ export default {
 
                 if (!element2.checked) {    //横
                     _text = addIText(element1.value, _x, _y, 20);
-                    canvas.add(_text);
-                    addGameObject(_text, this.ObjectType.TEXT, 0);
+                    this.canvas.add(_text);
+                    this.addGameObject(_text, this.ObjectType.TEXT, 0);
                 } else {                   //縦
                     _text = addITextGroup(element1.value, _x, _y, 20);
-                    canvas.add(_text);
-                    addGameObject(_text, this.ObjectType.TEXT_VERTICAL, 0);
+                    this.canvas.add(_text);
+                    this.addGameObject(_text, this.ObjectType.TEXT_VERTICAL, 0);
                 }
 
                 modalDialog.hide();
@@ -3881,9 +3901,9 @@ export default {
                 console.log("" + _x + "," + _y + "," + _w + "," + _h);
                 for (var jj = 0; jj < _h; jj++) {
                     for (var ii = 0; ii < _w; ii++) {
-                        var _rect = addMachineBox(_x + (ii * this.grid * 8), _y + (jj * this.grid * 8), this.grid * 8, this.grid * 8, getDefaultColor(), "#000000", "");
-                        canvas.add(_rect);
-                        addGameObject(_rect, this.ObjectType.MACHINE_BOX, 0);
+                        var _rect = addMachineBox(_x + (ii * this.grid * 8), _y + (jj * this.grid * 8), this.grid * 8, this.grid * 8, this.getDefaultColor(), "#000000", "");
+                        this.canvas.add(_rect);
+                        this.addGameObject(_rect, this.ObjectType.MACHINE_BOX, 0);
                     }
                 }
 
@@ -3930,7 +3950,7 @@ export default {
                 modalDialog.hide();
                 modalDialog = null;
                 modalTargetObject = null;
-                canvas.requestRenderAll();
+                this.canvas.requestRenderAll();
             }
         },
 
@@ -3972,8 +3992,8 @@ export default {
             // ドロップ位置を取得
             //  console.log(e);
             //  console.log(e.target);
-            var x = Math.round(e.layerX / canvasScale / grid) * grid;
-            var y = Math.round(e.layerY / canvasScale / grid) * grid;
+            var x = Math.round(e.layerX / this.canvasScale / this.grid) * this.grid;
+            var y = Math.round(e.layerY / this.canvasScale / this.grid) * this.grid;
 
             // ドラッグ対象のオブジェクトのデータを取得
             var tmp_id = e.dataTransfer.getData("text");
@@ -3987,24 +4007,24 @@ export default {
             switch (id) {
                 case "0": //
                     {
-                        var _rect = addBox(
+                        var _rect = this.addBox(
                             x,
                             y,
-                            grid * 8,
-                            grid * 8,
-                            getDefaultColor(),
+                            this.grid * 8,
+                            this.grid * 8,
+                            this.getDefaultColor(),
                             "#000000"
                         );
-                        canvas.add(_rect);
-                        addGameObject(_rect, this.ObjectType.BOX, 0);
+                        this.canvas.add(_rect);
+                        this.addGameObject(_rect, this.ObjectType.BOX, 0);
                     }
                     break;
                 case "1": //
                     {
-                        var x1 = x + grid * 4;
-                        var y1 = y - grid * 4;
-                        var x2 = x - grid * 4;
-                        var y2 = y + grid * 4;
+                        var x1 = x + this.grid * 4;
+                        var y1 = y - this.grid * 4;
+                        var x2 = x - this.grid * 4;
+                        var y2 = y + this.grid * 4;
                         let _lineArray = addLine(x1, y1, x2, y2);
                         /*
                         var _itexts = [];
@@ -4016,10 +4036,10 @@ export default {
                         addGameObject(_group,ObjectType.LINE,0);
                 */
 
-                        canvas.add(_lineArray[0]);
-                        canvas.add(_lineArray[1]);
-                        canvas.add(_lineArray[2]);
-                        addGameObject(_lineArray[0], this.ObjectType.LINE, 0);
+                        this.canvas.add(_lineArray[0]);
+                        this.canvas.add(_lineArray[1]);
+                        this.canvas.add(_lineArray[2]);
+                        this.addGameObject(_lineArray[0], this.ObjectType.LINE, 0);
                     }
                     break;
                 case "2": //
@@ -4027,13 +4047,13 @@ export default {
                         var _rect = addSpaceBox(
                             x,
                             y,
-                            grid * 8,
-                            grid * 8,
-                            getDefaultColor(),
+                            this.grid * 8,
+                            this.grid * 8,
+                            this.getDefaultColor(),
                             "#000000"
                         );
-                        canvas.add(_rect);
-                        addGameObject(_rect, this.ObjectType.SPACE_BOX, 0);
+                        this.canvas.add(_rect);
+                        this.addGameObject(_rect, this.ObjectType.SPACE_BOX, 0);
                     }
                     break;
                 case "3": //
@@ -4041,14 +4061,14 @@ export default {
                         var _rect = addMachineBox(
                             x,
                             y,
-                            grid * 8,
-                            grid * 8,
-                            getDefaultColor(),
+                            this.grid * 8,
+                            this.grid * 8,
+                            this.getDefaultColor(),
                             "#000000",
                             ""
                         );
-                        canvas.add(_rect);
-                        addGameObject(_rect, this.ObjectType.MACHINE_BOX, 0);
+                        this.canvas.add(_rect);
+                        this.addGameObject(_rect, this.ObjectType.MACHINE_BOX, 0);
                         addMachineBoxDialog(_rect);
                     }
                     break;
@@ -4245,7 +4265,7 @@ export default {
                     }
                 }
             }
-            canvas.requestRenderAll();
+            this.canvas.requestRenderAll();
         },
 
         ////////////
@@ -4261,13 +4281,13 @@ export default {
                         case this.ObjectType.NAME_TEXT_VERTICAL:
                         case this.ObjectType.TEXT_VERTICAL:
                         case this.ObjectType.TEXT_BOX:
-                            setDisplayPriority(_obj.obj);
+                            this.setDisplayPriority(_obj.obj);
                             break;
                     }
                 }
             }
 
-            canvas.requestRenderAll();
+            this.canvas.requestRenderAll();
         },
 
         ////////////
@@ -4289,11 +4309,11 @@ export default {
                 y,
                 this.grid * 8,
                 this.grid * 8,
-                getDefaultColor(),
+                this.getDefaultColor(),
                 "#000000"
             );
-            canvas.add(_rect);
-            addGameObject(_rect, this.ObjectType.NAME_BOX, 0);
+            this.canvas.add(_rect);
+            this.addGameObject(_rect, this.ObjectType.NAME_BOX, 0);
         },
 
         /////////////
@@ -4313,7 +4333,7 @@ export default {
         location_btnA.addEventListener("click", this.allocationGameMachine);
         location_btnB.addEventListener("click", this.allocationGameMachine);
         this.init();
-        
+
         ////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -4336,9 +4356,6 @@ export default {
 
         //const newMachine = newMachineApiData;
         //const stockMachine = stockMachineApiData;
-        const unitScale = 1;
-        const canvasWidth = this.map_width * this.grid * unitScale;
-        const canvasHeight = this.map_width * this.grid * unitScale;
 
 
         // ウィンドウのリサイズイベントでイメージの配置を調整
@@ -4346,7 +4363,7 @@ export default {
 
         // 初回読み込み時にもイメージの配置を調整
         console.log("test para ver si esta corriendo");
-        window.addEventListener("load", this.init);
+        //window.addEventListener("load", this.init);
         console.log("test para ver si esta corriendo");
 
 
@@ -4479,33 +4496,33 @@ export default {
 
         function zoomIN() {
             console.log("zoom in");
-            if (canvasScale < 10.0) {
-                canvasScale += 0.5;
+            if (this.canvasScale < 10.0) {
+                this.canvasScale += 0.5;
             }
-            this.canvas.setZoom(canvasScale);
+            this.canvas.setZoom(this.canvasScale);
             if (this.canvas2) {
-                this.canvas2.setZoom(canvasScale);
+                this.canvas2.setZoom(this.canvasScale);
             }
         }
 
         function zoomOUT() {
             console.log("zoom out");
 
-            if (canvasScale > 0.5) {
-                canvasScale -= 0.5;
+            if (this.canvasScale > 0.5) {
+                this.canvasScale -= 0.5;
             } else {
-                canvasScale = 0.5;
+                this.canvasScale = 0.5;
             }
-            this.canvas.setZoom(canvasScale);
+            this.canvas.setZoom(this.canvasScale);
             if (this.canvas2) {
-                this.canvas2.setZoom(canvasScale);
+                this.canvas2.setZoom(this.canvasScale);
             }
         }
-    
-        
+
+
         var canvasContainer = document.getElementById("main");
-canvasContainer.addEventListener("dragover", this.handleDragOver, false);
-canvasContainer.addEventListener("drop", this.handleDrop, false);
+        canvasContainer.addEventListener("dragover", this.handleDragOver, false);
+        canvasContainer.addEventListener("drop", this.handleDrop, false);
     }
 }
 

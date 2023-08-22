@@ -210,1216 +210,6 @@
 <script>
 import { fabric } from 'fabric';
 
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////Side menu
-/*
-
-横メニュー用
-
-*/
-
-
-
-function sm_button(_bntID){
-}
-
-
-function initSideMenu(){
-    
-}
-
-
-
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////Map edit script
-const images = [
-  "./images/rect.png",
-  "./images/line.png",
-  "./images/space.png",
-  "./images/machine.png",
-  "./images/text.png",
-  "./images/machines.png",
-];
-
-
-var canvasContainer = document.getElementById("main");
-///Uncomment
-// canvasContainer.addEventListener("dragover", handleDragOver, false);
-// canvasContainer.addEventListener("drop", handleDrop, false);
-
-// イメージの配置を調整する関数 (side menu)
-function adjustImageLayout() {
-    const sidebar = document.getElementById("sidebar");
-    const sidebarWidth = sidebar.offsetWidth; // サイドバーの横幅
-    const sidebarHeight = sidebar.offsetHeight; // サイドバーの縦幅
-    const imageCount = images.length; // イメージの個数
-  
-    const imageContainer = sidebar.querySelector(".d-flex");
-    imageContainer.innerHTML = ""; // 一度中身をクリア
-  
-    const imageWidth = sidebarWidth - 100; // イメージの横幅
-    const imageHeight = sidebarHeight / imageCount - 30; // イメージの縦幅
-  
-    for (let i = 0; i < imageCount; i++) {
-      const image = document.createElement("img");
-      image.src = images[i];
-      image.classList.add("mb-3", "img-fluid");
-      image.setAttribute("draggable", true);
-      image.style.width = `${imageWidth}px`;
-      image.style.height = `${imageHeight}px`;
-      image.id = "SIDE_MENU_ImageID_" + i;
-      console.log(image);
-      imageContainer.appendChild(image);
-  
-      image.addEventListener("dragstart", handleDragStart, false);
-      image.addEventListener("dragend", handleDragEnd, false);
-      image.addEventListener("drag", handleDrag, false);
-    }
-    /*
-      var dragableObjects = document.querySelectorAll("img");
-      [].forEach.call(dragableObjects, function (dragableObject) {
-        dragableObject.addEventListener("dragstart", handleDragStart, false);
-        dragableObject.addEventListener("dragend", handleDragEnd, false);
-        dragableObject.addEventListener("drag", handleDrag, false);
-      });
-    */
-  }
-  
-
-  
-  function handleDragStart(e) {
-    console.log("handle Drag Start");
-    var target = e.target;
-    e.dataTransfer.setData("text", target.id);
-    target.style.opacity = "0.4";
-  }
-  
-  function handleDragEnd(e) {
-    var target = e.target;
-    target.style.opacity = "1.0";
-    /*
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", "dialog.html", true);
-    xhr.onload = function () {
-      if (xhr.status === 200) {
-        // 取得したダイアログのコンテンツをモーダル内に挿入
-        var dialogContent = xhr.responseText;
-        var modalContent = document.querySelector(
-          "#staticBackdrop .modal-content"
-        );
-        modalContent.innerHTML = dialogContent;
-        // モーダルを表示
-        var modal = new bootstrap.Modal(
-          document.getElementById("staticBackdrop")
-        );
-        modal.show();
-      }
-    };
-    xhr.send();
-  */
-  }
-  
-  function handleDrag(e) {}
-  
-  function handleDragOver(e) {
-    // デフォルトの動作をキャンセル
-    e.preventDefault();
-  }
-  
-  function handleDrop(e) {
-    // デフォルトの動作をキャンセル
-    e.preventDefault();
-  
-    // ドロップ位置を取得
-    //  console.log(e);
-    //  console.log(e.target);
-    var x = Math.round(e.layerX / canvasScale / grid) * grid;
-    var y = Math.round(e.layerY / canvasScale / grid) * grid;
-  
-    // ドラッグ対象のオブジェクトのデータを取得
-    var tmp_id = e.dataTransfer.getData("text");
-    console.log("drop_id1:" + tmp_id);
-  
-    if (!tmp_id.match(/SIDE_MENU_ImageID_/)) {
-      return;
-    }
-    let id = tmp_id.replace("SIDE_MENU_ImageID_", "");
-    console.log("drop_id2:" + id);
-    switch (id) {
-      case "0": //
-        {
-          var _rect = addBox(
-            x,
-            y,
-            grid * 8,
-            grid * 8,
-            getDefaultColor(),
-            "#000000"
-          );
-          canvas.add(_rect);
-          addGameObject(_rect, ObjectType.BOX, 0);
-        }
-        break;
-      case "1": //
-        {
-          var x1 = x + grid * 4;
-          var y1 = y - grid * 4;
-          var x2 = x - grid * 4;
-          var y2 = y + grid * 4;
-          let _lineArray = addLine(x1, y1, x2, y2);
-          /*
-          var _itexts = [];
-          _itexts.push(_lineArray[0]);
-          _itexts.push(_lineArray[1]);
-          _itexts.push(_lineArray[2]);
-          var _group = new fabric.Group(_itexts);
-          canvas.add(_group);
-          addGameObject(_group,ObjectType.LINE,0);
-  */
-  
-          canvas.add(_lineArray[0]);
-          canvas.add(_lineArray[1]);
-          canvas.add(_lineArray[2]);
-          addGameObject(_lineArray[0], ObjectType.LINE, 0);
-        }
-        break;
-      case "2": //
-        {
-          var _rect = addSpaceBox(
-            x,
-            y,
-            grid * 8,
-            grid * 8,
-            getDefaultColor(),
-            "#000000"
-          );
-          canvas.add(_rect);
-          addGameObject(_rect, ObjectType.SPACE_BOX, 0);
-        }
-        break;
-      case "3": //
-        {
-          var _rect = addMachineBox(
-            x,
-            y,
-            grid * 8,
-            grid * 8,
-            getDefaultColor(),
-            "#000000",
-            ""
-          );
-          canvas.add(_rect);
-          addGameObject(_rect, ObjectType.MACHINE_BOX, 0);
-          addMachineBoxDialog(_rect);
-        }
-        break;
-      case "4": //
-        {
-          modalTargetObject = { x: x, y: y };
-          addTextDialog();
-        }
-        break;
-      case "5": //
-        {
-          modalTargetObject = { x: x, y: y };
-          addMultiMachineDialog();
-        }
-        break;
-    }
-  
-    /*
-  // 複数配置?
-    const rectWidth = grid * 8;
-    const rectHeight = grid * 8;
-    const rectSpacing = 0;
-    const rectColumns = 1;
-    const rectRows = 1;
-    const rects = [];
-    for (let row = 0; row < rectRows; row++) {
-      for (let col = 0; col < rectColumns; col++) {
-        const left = x + col * (rectWidth + rectSpacing);
-        const top = y + row * (rectHeight + rectSpacing);
-  
-        const rect = new fabric.Rect({
-          left: left,
-          top: top,
-          width: grid * 8,
-          height: grid * 8,
-          fill: "#FCAF17",
-          originX: "center",
-          originY: "center",
-          stroke: "#ff0000",
-          strokeWidth: 2,
-        });
-        rect.on("moving", function (e) {
-          rect.set({
-            left: Math.round(rect.left / grid) * grid,
-            top: Math.round(rect.top / grid) * grid,
-          });
-        });
-  
-        // anime test
-        var cnt = 0;
-        const timeID = setInterval(animateRandom, 1000);
-        function animateRandom(){
-          if((cnt&1) == 0){
-            rect.set({fill:"#ff0000"});
-          }else {
-            rect.set({fill:"#ffffff"});
-          }
-          cnt++;
-          canvas.requestRenderAll();
-          if(cnt >= 10){
-            clearInterval(timeID);
-          }
-        }
-        // aa
-        // canvas上にrectオブジェクトを配置
-        canvas.add(rect);
-        rects.push(rect);
-      }
-    }
-    canvas.setActiveObject(rects[0]);
-  */
-  }
-  
-  
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////Setting data
-
-// 設定画面データ
-
-var settingMenuData = {
-    setting_01: false,
-    setting_02: false,
-    setting_03: false,
-    setting_04: false,
-}
-
-
-function initSettingData(){
-    console.log("**** setting param init ****");
-}
-
-
-
-
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////Fabric function
-/*
-
-fabric生成関連
-
-*/
-
-
-// box
-function addBox(_xx, _yy, _ww, _hh, _fill, _stroke) {
-    var control_param = fabric.Object.prototype.controls;
-    control_param.mtr.visible = false; // mtrは回転ポイントの名前
-    control_param.bl.visible = true; // blは左下のコントロールポイントの名前
-    control_param.br.visible = true; // brは右下のコントロールポイントの名前
-    control_param.mb.visible = true; // mbは下中央のコントロールポイントの名前
-    control_param.ml.visible = true; // mlは左中央のコントロールポイントの名前
-    control_param.mr.visible = true; // mrは右中央のコントロールポイントの名前
-    control_param.mt.visible = true; // mtは上中央のコントロールポイントの名前
-    control_param.tl.visible = true; // tlは左上のコントロールポイントの名前
-    control_param.tr.visible = true; // trは右上のコントロールポイントの名前
-
-    var _rect = new fabric.Rect({
-        idx: -1,
-        left: _xx,
-        top: _yy,
-        fill: _fill,
-        width: _ww,
-        height: _hh,
-        originX: 'left',
-        originY: 'top',
-        borderColor: 'red',
-        controls: control_param,
-        lockRotation: true,
-        strokeWidth: 1,
-        stroke: _stroke
-    });
-    /*
-        _rect.on("moving",function(e){
-    //        console.log(_rect);
-            _rect.set({
-                left: Math.round(_rect.left / grid) * grid,
-                top: Math.round(_rect.top / grid) * grid
-            });
-        });
-    */
-    /*
-        _rect.on("scaling",function(e){
-            console.log("scaling...?");
-            var _xx2 = Math.round(_rect.left / grid) * grid;
-            var _hh2 = Math.round(_rect.top / grid) * grid;
-            var _ww2 = Math.round(_rect.scaleX * _rect.width / grid) * grid;
-            var _hh2 = Math.round(_rect.scaleY * _rect.height / grid) * grid;
-            _rect.set({
-                left: _xx2,
-                right: _hh2,
-                width: _ww2,
-                height: _hh2,
-                scaleX: 1.0,
-                scaleY: 1.0,
-            });
-            canvas.requestRenderAll();
-        });
-    */
-    /*
-        _rect.on("scaled",function(e){
-            console.log("scaled...?");
-        });
-    */
-    return (_rect);
-};
-
-function addNameBox(_xx, _yy, _ww, _hh, _fill, _stroke) {
-    var control_param = fabric.Object.prototype.controls;
-    control_param.mtr.visible = false; // mtrは回転ポイントの名前
-    control_param.bl.visible = true; // blは左下のコントロールポイントの名前
-    control_param.br.visible = true; // brは右下のコントロールポイントの名前
-    control_param.mb.visible = true; // mbは下中央のコントロールポイントの名前
-    control_param.ml.visible = true; // mlは左中央のコントロールポイントの名前
-    control_param.mr.visible = true; // mrは右中央のコントロールポイントの名前
-    control_param.mt.visible = true; // mtは上中央のコントロールポイントの名前
-    control_param.tl.visible = true; // tlは左上のコントロールポイントの名前
-    control_param.tr.visible = true; // trは右上のコントロールポイントの名前
-
-    var _rect = new fabric.Rect({
-        idx: -1,
-        left: _xx,
-        top: _yy,
-        fill: _fill,
-        width: _ww,
-        height: _hh,
-        originX: 'left',
-        originY: 'top',
-        borderColor: 'red',
-        controls: control_param,
-        lockRotation: true,
-        strokeWidth: 1,
-        stroke: _stroke
-    });
-    return (_rect);
-};
-
-// box
-function addSpaceBox(_xx, _yy, _ww, _hh, _fill, _stroke) {
-    var control_param = fabric.Object.prototype.controls;
-    control_param.mtr.visible = false; // mtrは回転ポイントの名前
-    control_param.bl.visible = true; // blは左下のコントロールポイントの名前
-    control_param.br.visible = true; // brは右下のコントロールポイントの名前
-    control_param.mb.visible = true; // mbは下中央のコントロールポイントの名前
-    control_param.ml.visible = true; // mlは左中央のコントロールポイントの名前
-    control_param.mr.visible = true; // mrは右中央のコントロールポイントの名前
-    control_param.mt.visible = true; // mtは上中央のコントロールポイントの名前
-    control_param.tl.visible = true; // tlは左上のコントロールポイントの名前
-    control_param.tr.visible = true; // trは右上のコントロールポイントの名前
-
-    var _rect = new fabric.Rect({
-        idx: -1,
-        left: _xx,
-        top: _yy,
-        fill: _fill,
-        width: _ww,
-        height: _hh,
-        originX: 'left',
-        originY: 'top',
-        borderColor: 'red',
-        lockRotation: true,
-        strokeWidth: 1,
-        stroke: _stroke
-    });
-
-    var _xx2 = _xx;
-    var _yy2 = _yy;
-    var _line1 = new fabric.Line(
-        [_xx2, _yy2, _xx2 + _ww, _yy2 + _hh],
-        {
-            type: 'line',
-            stroke: '#202020',
-            originX: 'left',
-            originY: 'top',
-            borderColor: 'red',
-            strokeWidth: 1
-        });
-
-    var _line2 = new fabric.Line(
-        [_xx2 + _ww, _yy2, _xx2, _yy2 + _hh],
-        {
-            type: 'line',
-            stroke: '#202020',
-            originX: 'left',
-            originY: 'top',
-            borderColor: 'red',
-            strokeWidth: 1
-        });
-
-    var _itexts = [_rect, _line1, _line2];
-    var _group = new fabric.Group(_itexts);
-    _group.set({
-        borderColor: 'red',
-        controls: control_param
-    });
-
-    return (_group);
-};
-
-
-// box
-function addMachineBox(_xx, _yy, _ww, _hh, _fill, _stroke, _text2) {
-    var control_param = fabric.Object.prototype.controls;
-    control_param.mtr.visible = false; // mtrは回転ポイントの名前
-    control_param.bl.visible = false; // blは左下のコントロールポイントの名前
-    control_param.br.visible = false; // brは右下のコントロールポイントの名前
-    control_param.mb.visible = false; // mbは下中央のコントロールポイントの名前
-    control_param.ml.visible = false; // mlは左中央のコントロールポイントの名前
-    control_param.mr.visible = false; // mrは右中央のコントロールポイントの名前
-    control_param.mt.visible = false; // mtは上中央のコントロールポイントの名前
-    control_param.tl.visible = false; // tlは左上のコントロールポイントの名前
-    control_param.tr.visible = false; // trは右上のコントロールポイントの名前
-
-    var _rect = new fabric.Rect({
-        idx: -1,
-        colorTimeID: null,
-        left: _xx,
-        top: _yy,
-        fill: _fill,
-        width: _ww,
-        height: _hh,
-        originX: 'left',
-        originY: 'top',
-        lockRotation: true,
-        strokeWidth: 1,
-        controls: control_param,
-        stroke: _stroke
-    });
-    let _text = new fabric.IText(_text2, {
-        left: _xx + (_ww / 2),
-        top: _yy + (_hh / 2),
-        width: _ww,
-        height: _hh,
-        stroke: 'blue',
-        fontSize: 10,
-        strokeWidth: 0,
-        editingBorderColor: 'black',
-        angle: 0,
-        controls: control_param,
-        textAlign: 'center',
-        originX: 'center',
-        originY: 'center'
-    });
-
-    var _itexts;
-
-    if(gameMode == GameMode.MODE_MACHINE_SET){
-        var _rect2 = new fabric.Rect({
-            colorTimeID: null,
-            left: _xx,
-            top: _yy + (_hh - 20),
-            fill: "#ff0000",
-            width: _ww,
-            height: 20,
-            originX: 'left',
-            originY: 'top',
-            controls: control_param,
-            lockRotation: true,
-            strokeWidth: 1,
-            stroke: _stroke
-        });
-
-        let _text2 = new fabric.IText("未割付", {
-            left: _xx + (_ww / 2),
-            top: _yy + (_hh - 10),
-            width: _ww,
-            height: _hh,
-            stroke: 'blue',
-            fontSize: 10,
-            strokeWidth: 0,
-            editingBorderColor: 'black',
-            angle: 0,
-            controls: control_param,
-            textAlign: 'center',
-            originX: 'center',
-            originY: 'center'
-        });
-    
-        _itexts = [_rect, _text, _rect2,_text2];
-    }else { //島図製作中は必要ない
-        _itexts = [_rect, _text];
-
-    }
-
-
-    var _group = new fabric.Group(_itexts);
-    _group.set({
-        borderColor: 'red',
-        controls: control_param
-    });
-
-    return (_group);
-};
-
-
-/*
-// line 
-function addLineOLD(){
-    console.log("adLine2");
-
-    var line = new fabric.Line([300, 200, 400, 400], {
-      stroke: 'red',
-      strokeWidth: 10,
-      selectable: true,
-      evented: true,
-      hasControls: true,
-      hasBorders: true,
-    });
-    canvas.add(line);
-    
-    // 頂点をマウスでドラッグして変更する
-    line.on('mousedown', function (options) {
-      if (options.target && options.target.type === 'line') {
-        var pointer = canvas.getPointer(options.e);
-        var activeObject = options.target;
-        console.log(activeObject);
-        var activeObjectCoords = activeObject.oCoords;
-        console.log(activeObjectCoords);
-        var xDiff = pointer.x - activeObjectCoords.tl.x;
-        var yDiff = pointer.y - activeObjectCoords.tl.y;
-        canvas.on('mouse:move', function (options) {
-          var pointer = canvas.getPointer(options.e);
-          activeObject.set({
-            x1: pointer.x - xDiff,
-            y1: pointer.y - yDiff,
-            x2: pointer.x + (activeObjectCoords.br.x - activeObjectCoords.tr.x) - xDiff,
-            y2: pointer.y + (activeObjectCoords.br.y - activeObjectCoords.tr.y) - yDiff,
-          });
-          line.setCoords();
-          canvas.renderAll();
-        });
-        canvas.on('mouse:up', function () {
-          canvas.off('mouse:move');
-          canvas.off('mouse:up');
-        });
-      }
-    });
-};
-*/
-
-
-// テスト中だけどこっちが正式版になる予定
-function addLine(_x1, _y1, _x2, _y2) {
-    console.log("addLine");
-    //    const element = document.querySelector('.scrollable');
-    var x01 = _x1;
-    var y01 = _y1;
-    var x02 = _x2;
-    var y02 = _y2;
-    var control_param = fabric.Object.prototype.controls;
-    control_param.mtr.visible = false; // mtrは回転ポイントの名前
-    control_param.bl.visible = false; // blは左下のコントロールポイントの名前
-    control_param.br.visible = false; // brは右下のコントロールポイントの名前
-    control_param.mb.visible = false; // mbは下中央のコントロールポイントの名前
-    control_param.ml.visible = false; // mlは左中央のコントロールポイントの名前
-    control_param.mr.visible = false; // mrは右中央のコントロールポイントの名前
-    control_param.mt.visible = false; // mtは上中央のコントロールポイントの名前
-    control_param.tl.visible = false; // tlは左上のコントロールポイントの名前
-    control_param.tr.visible = false; // trは右上のコントロールポイントの名前
-    var _line = new fabric.Line(
-        [x01, y01, x02, y02],
-        {
-            type: 'line',
-            stroke: '#202020',
-            originX: 'left',
-            originY: 'top',
-            borderColor: '#ffffff00',
-            controls: control_param,
-            strokeWidth: 2
-        });
-    var _circle1 = new fabric.Circle({
-        //        NoDelete:true,
-        parentObj: _line,
-        left: x01,
-        top: y01,
-        fill: '#000000',
-        radius: 20,
-        originX: 'center',
-        originY: 'center',
-        strokeWidth: 2,
-        stroke: "#000000",
-        borderColor: '#00000000',
-        controls: control_param
-    });
-    var _circle2 = new fabric.Circle({
-        //        NoDelete:true,
-        parentObj: _line,
-        left: x02,
-        top: y02,
-        fill: '#000000',
-        radius: 20,
-        originX: 'center',
-        originY: 'center',
-        strokeWidth: 2,
-        borderColor: '#00000000',
-        controls: control_param
-    });
-    _line.on('moving', function (e) {
-        //        console.log(_line);
-        //        console.log(""+(_line.lineCoords.tl.x-_line.x1)+","+(_line.lineCoords.tl.y-_line.y1));
-        _line.set({
-            left: Math.round(_line.left / grid) * grid,
-            top: Math.round(_line.top / grid) * grid
-        });
-
-        _line.setCoords();
-
-        var _xx1 = _line.aCoords.tl.x;
-        var _yy1 = _line.aCoords.tl.y;
-        var _xx2 = _line.aCoords.br.x;
-        var _yy2 = _line.aCoords.br.y;
-        if (((_line.x1 > _line.x2) && (_line.y1 > _line.y2))) {
-
-        } else if ((_line.x1 > _line.x2)) {
-            _xx1 = _line.aCoords.tr.x;
-            _xx2 = _line.aCoords.bl.x;
-            _yy1 = _line.aCoords.tr.y;
-            _yy2 = _line.aCoords.bl.y;
-        } else if (_line.y1 > _line.y2) {
-            _xx1 = _line.aCoords.tr.x;
-            _xx2 = _line.aCoords.bl.x;
-            _yy1 = _line.aCoords.tr.y;
-            _yy2 = _line.aCoords.bl.y;
-        }
-        _circle1.set({
-            left: _xx1,
-            top: _yy1
-        });
-        _circle2.set({
-            left: _xx2,
-            top: _yy2
-        });
-        _circle1.setCoords();
-        _circle2.setCoords();
-        canvas.requestRenderAll();
-    });
-    _circle1.on('moving', function (e) {
-        //        console.log("_circle1");
-        _circle1.set({
-            left: Math.round(_circle1.left / grid) * grid,
-            top: Math.round(_circle1.top / grid) * grid
-        });
-        _circle1.setCoords();
-        /*
-                var _lx1 = _circle1.left;
-                var _ly1 = _circle1.top;
-                var _lx2 = _circle2.left;
-                var _ly2 = _circle2.top;
-                if (_lx1 < _lx2) {
-                    [_lx1, _lx2] = [_lx2, _lx1];
-                    [_ly1, _ly2] = [_ly2, _ly1];
-                }
-                if (_ly1 < _ly2) {
-                    [_lx1, _lx2] = [_lx2, _lx1];
-                    [_ly1, _ly2] = [_ly2, _ly1];
-                }
-                _line.set({
-                    x1: _lx1,
-                    y1: _ly1,
-                    x2: _lx2,
-                    y2: _ly2
-                });
-        */
-        _line.set({
-            x1: _circle1.left,
-            y1: _circle1.top,
-            x2: _circle2.left,
-            y2: _circle2.top
-        });
-        _line.setCoords();
-        canvas.requestRenderAll();
-    });
-    _circle2.on('moving', function (e) {
-        //        console.log("_circle2");
-        _circle2.set({
-            left: Math.round(_circle2.left / grid) * grid,
-            top: Math.round(_circle2.top / grid) * grid
-        });
-        _circle2.setCoords();
-        _line.set({
-            x1: _circle1.left,
-            y1: _circle1.top,
-            x2: _circle2.left,
-            y2: _circle2.top
-        });
-        _line.setCoords();
-        canvas.requestRenderAll();
-    });
-
-    //    canvas.add(_circle1);
-    //    canvas.add(_circle2);
-    //    canvas.add(_line);
-    _line.set({         //管理者が居ない玉…要管理方法…
-        circle1: _circle1,
-        circle2: _circle2,
-    });
-
-    return ([_line, _circle1, _circle2]);
-};
-
-
-
-function addIText(str2, _xx, _yy, _fontSize) {
-    var control_param = fabric.Object.prototype.controls;
-    control_param.mtr.visible = false; // mtrは回転ポイントの名前
-    control_param.bl.visible = true; // blは左下のコントロールポイントの名前
-    control_param.br.visible = true; // brは右下のコントロールポイントの名前
-    control_param.mb.visible = false; // mbは下中央のコントロールポイントの名前
-    control_param.ml.visible = false; // mlは左中央のコントロールポイントの名前
-    control_param.mr.visible = false; // mrは右中央のコントロールポイントの名前
-    control_param.mt.visible = false; // mtは上中央のコントロールポイントの名前
-    control_param.tl.visible = true; // tlは左上のコントロールポイントの名前
-    control_param.tr.visible = true; // trは右上のコントロールポイントの名前
-    let _text = new fabric.IText(str2, {
-        left: _xx,
-        top: _yy,
-        fontSize: _fontSize,
-        stroke: 'black',
-        strokeWidth: 1,
-        backgroundColor: "white",
-        angle: 0,
-//        borderColor: 'red',
-//        editingBorderColor: "blue",
-//        controls: control_param,
-        editable: false,
-        textAlign: 'center',
-        originX: 'left',
-        originY: 'top'
-    });
-    /*
-        let _text = new fabric.Text(str, {
-            left: _xx,
-            top: _yy,
-            fontSize: _fontSize,
-            stroke: 'black',
-            strokeWidth: 1,
-            editingBorderColor: 'green',
-            angle: 0,
-            borderColor:'red',
-            controls: control_param,
-            textAlign: 'center',
-            originX: 'center',
-            originY: 'center'
-        });
-    */
-    return (_text);
-};
-
-
-function addNameIText(str, _xx, _yy, _fontSize) {
-    var control_param = fabric.Object.prototype.controls;
-    control_param.mtr.visible = false; // mtrは回転ポイントの名前
-    control_param.bl.visible = true; // blは左下のコントロールポイントの名前
-    control_param.br.visible = true; // brは右下のコントロールポイントの名前
-    control_param.mb.visible = false; // mbは下中央のコントロールポイントの名前
-    control_param.ml.visible = false; // mlは左中央のコントロールポイントの名前
-    control_param.mr.visible = false; // mrは右中央のコントロールポイントの名前
-    control_param.mt.visible = false; // mtは上中央のコントロールポイントの名前
-    control_param.tl.visible = true; // tlは左上のコントロールポイントの名前
-    control_param.tr.visible = true; // trは右上のコントロールポイントの名前
-
-    let _text = new fabric.IText(str, {
-        left: _xx,
-        top: _yy,
-        fontSize: _fontSize,
-        stroke: 'black',
-        strokeWidth: 1,
-        backgroundColor: "white",
-        angle: 0,
-        borderColor: 'red',
-        editingBorderColor: "blue",
-        controls: control_param,
-        editable: false,
-        textAlign: 'center',
-        originX: 'left',
-        originY: 'top'
-    });
-    return (_text);
-};
-
-
-function addITextGroup(str, _x, _y, _fontSize) {
-    console.log("addITextGroup");
-
-    var control_param = fabric.Object.prototype.controls;
-    control_param.mtr.visible = false; // mtrは回転ポイントの名前
-    control_param.bl.visible = true; // blは左下のコントロールポイントの名前
-    control_param.br.visible = true; // brは右下のコントロールポイントの名前
-    control_param.mb.visible = false; // mbは下中央のコントロールポイントの名前
-    control_param.ml.visible = false; // mlは左中央のコントロールポイントの名前
-    control_param.mr.visible = false; // mrは右中央のコントロールポイントの名前
-    control_param.mt.visible = false; // mtは上中央のコントロールポイントの名前
-    control_param.tl.visible = true; // tlは左上のコントロールポイントの名前
-    control_param.tr.visible = true; // trは右上のコントロールポイントの名前
-
-    var arr = Array.from(str);
-    var ii = 0;
-    var _itexts = [];
-    var xx = 0;
-    var yy = 0;
-
-    var _rect = new fabric.Rect({
-        left: _x,
-        top: _y,
-        width: 1,
-        height: 1,
-        originX: 'center',
-        originY: 'center',
-        fill: "white"
-    });
-    _itexts.push(_rect);
-
-    for (ii = 0; ii < arr.length; ii++) {
-        var ang = 0;
-        var addY = _fontSize;
-        var offX = 0;
-        var offY = 0;
-        var col = "#000000";
-        if (arr[ii] == '\n') {
-            xx -= _fontSize;
-            yy = 0;
-            continue;
-        }
-
-        switch (checkProhibitedChar(arr[ii])) {
-            case 1: //全角記号
-                ang = 90;
-                offX = -1;
-                col = "#0000ff";
-                break;
-            case 2: //全角記号（
-                ang = 90;
-                col = "#0000ff";
-                break;
-            case 3: //全角記号）
-                ang = 90;
-                col = "#0000ff";
-                break;
-
-            case 4: //半角記号
-                ang = 90;
-                col = "#ff0000";
-                //addY = 15;
-                break;
-            case 5: //半角記号(
-                ang = 90;
-                col = "#ff0000";
-                break;
-            case 6: //半角記号)
-                ang = 90;
-                col = "#ff0000";
-                break;
-        }
-
-        let _itext1 = new fabric.IText(arr[ii], {
-            left: _x + xx + offX,
-            top: _y + yy,
-            fill: col,
-            fontFamily: 'sans-serif',
-            centerTransform: true,
-            originX: 'center',          //fontSizeでは計算が合わないから…
-            originY: 'center',          //fontSizeでは計算が合わないから…
-            stroke: 'blue',
-            strokeWidth: 0,
-            angle: ang,
-            backgroundColor: "white",
-            editingBorderColor: 'red',
-            dirty: true,
-            lockUniScaling: true,
-            controls: control_param,
-            fontSize: _fontSize,
-            textDirection: 'ttb' // 縦書きに設定
-        });
-        yy += (addY);
-        _itexts.push(_itext1);
-    }
-
-    var _group = new fabric.Group(_itexts);
-    _group.set({
-        idx: -1,
-        text: str,
-        stroke: 'black',
-        editingBorderColor: 'red',
-        strokeWidth: 1,
-        borderColor: 'red',
-        fill: "red",
-        controls: control_param
-    });
-
-    var _boundingRect = _group.getBoundingRect();
-    console.log(_rect);
-    _rect.set({
-        left: 0,
-        top: 0,
-        width: _boundingRect.width,
-        height: _boundingRect.height,
-    });
-    console.log(_rect);
-
-    //    canvas.add(_group);
-    return (_group);
-};
-
-
-// 正規表現
-function checkProhibitedChar(str) {
-    //                var pattern1 =  /[！-／：-＠［-｀｛-～ー、-〜”’・]+/g;
-    //                var pattern4 =  /[!-/:-@[-`{-~]/g;
-    var ret = 0;
-    var pattern1 = /[！-／：-＠［-｀｛-～ー、-〜”’・]+/g;
-    var pattern2 = /[！-／：-＠［-｀｛-～ー、-〜”’・]+/g;
-    var pattern3 = /[！-／：-＠［-｀｛-～ー、-〜”’・]+/g;
-    var pattern4 = /[!-/:-@[-`{-~]/g;
-    var pattern5 = /[!-/:-@[-`{-~]/g;
-    var pattern6 = /[!-/:-@[-`{-~]/g;
-
-    if (pattern1.test(str)) {   //ただ90回転
-        console.log(str);
-        ret = 1;
-    } else if (pattern2.test(str)) {   //上詰め
-        console.log(str);
-        ret = 2;
-    } else if (pattern3.test(str)) {   //下詰め
-        console.log(str);
-        ret = 3;
-    } else if (pattern4.test(str)) {   //ただ90回転
-        console.log(str);
-        ret = 4;
-    } else if (pattern5.test(str)) {
-        console.log(str);
-        ret = 5;
-    } else if (pattern6.test(str)) {
-        console.log(str);
-        ret = 6;
-    }
-    return (ret);
-};
-
-
-// machine box専用
-// color animation
-function setObjectAnimation(_canvasID, _obj) {
-    //    console.log(_obj);
-    /*
-        const timeID = setInterval(colorAnim, 1000);
-        function colorAnim() {
-            let _rect = _obj._objects.at(0);
-            var cnt = 0;
-            if(_obj.colorTimeCnt){
-                cnt = _obj.colorTimeCnt;
-                _obj.colorTimeCnt++;
-            }
-            if ((cnt & 1) == 0) {
-                _rect.set({ fill: "#ff0000" });
-            } else {
-                _rect.set({ fill: "#ffffff" });
-            }
-            _cnvs.requestRenderAll();           //これを１か所に纏めたい…
-        }
-        _obj.set({ colorTimeID: timeID ,colorTimeCnt:1});
-        return (timeID);
-    */
-    animationObjectList.push({ canvasID: _canvasID, obj: _obj });
-}
-
-function stopObjectAnimation(_obj) {
-    /*
-        if(_obj.colorTimeID){
-            clearInterval(_obj.colorTimeID);
-        }
-    */
-    for (var ii = 0; ii < animationObjectList.length; ii++) {
-        let _obj2 = animationObjectList.at(ii);
-        if (_obj2) {
-            if (_obj2.obj == _obj) {
-                console.log("stop animation hit!");
-                delete animationObjectList[ii];
-                break;
-            }
-        }
-    }
-}
-
-
-function setDisplayPriority(_obj) {
-    _obj.bringToFront();
-    //    canvas.bringToFront(_obj);   //最前面
-    //    canvas.bringForward(_obj);   //+1
-    //    canvas.sendToBack(_obj);     //最奥
-    //    canvas.sendBackwards(_obj);   //-1
-}
-
-
-var animationObjectList = null;
-var animationTimeID = 0;
-var animationTimeCnt = 0;
-function initFabricFunction() {
-    animationObjectList = new Array();
-
-    animationTimeID = setInterval(colorAnim2, 1000);
-    function colorAnim2() {
-        var col = "#ffffff";
-        if ((animationTimeCnt & 1) == 0) {
-            col = "#ff0000";
-        }
-        for (var ii = 0; ii < animationObjectList.length; ii++) {
-            let _obj2 = animationObjectList.at(ii);
-            if (_obj2) {
-                let _obj = _obj2.obj;
-                let _rect = _obj._objects.at(0);
-                _rect.set({ fill: col });
-            }
-        }
-        if (animationObjectList.length > 0) {
-            animationTimeCnt++;
-            canvas.requestRenderAll();
-            if (canvas2) {
-                canvas2.requestRenderAll();     //...
-            }
-        }
-    }
-}
-
-
-
-
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////Machine Set Mode
-
-
-const GameMode = {
-  MODE_MAP_EDIT: 0,     // 島図
-  MODE_MACHINE_SET: 1,  // 遊技機設置
-};
-
-const gameMode = GameMode.MODE_MACHINE_SET;
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////Shared Data
-/*
-
-共有データ
-
-*/
-
-
-
-
-// 1グリッドのpicサイズ
-let grid = 8;
-
-// 島図全体のサイズ(グリッド数)
-const map_width = 300;
-const map_height = 300;
-
-// ?ここに置いていいのか?
-
-// 全体のステータス
-var mainStatus = {
-  floor: "1", //現在のフロア
-  floorID: 1,
-  actionID: 0, //直前のアクション
-
-  lastActionType: 0,
-  lastActionObj: null,
-
-  isSplit: false,   //分割中
-  targetCanvasID: 0,  //分割中先に指定しているオブジェクトがいるcanvas
-};
-
-function initMainStatus() {}
-
-// フロアの情報
-var floorInfo = {
-  //フロアの情報
-  floor: "",
-  floorID: 1,
-};
-
-var floorList = null;
-
-// フロア初期化
-function initFloor() {
-  floorList = new Array();
-
-
-
-  var copyFloor = Object.assign({}, floorInfo);
-  copyFloor.floor = "1F";
-  copyFloor.floorID = 1;
-  floorList.push(copyFloor);
-  copyFloor = Object.assign({}, floorInfo);
-  copyFloor.floor = "2F";
-  copyFloor.floorID = 2;
-  floorList.push(copyFloor);
-  copyFloor = Object.assign({}, floorInfo);
-  copyFloor.floor = "B1";
-  copyFloor.floorID = 3;
-  floorList.push(copyFloor);
-
-  console.log(floorList);
-}
-
-
-
-
-//
-function getFloorList(){
-  return(floorList);
-}
-
-
-
-
-
-//Delete icon
-var deleteIcon = "data:image/svg+xml,%3C%3Fxml version='1.0' encoding='utf-8'%3F%3E%3C!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'%3E%3Csvg version='1.1' id='Ebene_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' width='595.275px' height='595.275px' viewBox='200 215 230 470' xml:space='preserve'%3E%3Ccircle style='fill:%23F44336;' cx='299.76' cy='439.067' r='218.516'/%3E%3Cg%3E%3Crect x='267.162' y='307.978' transform='matrix(0.7071 -0.7071 0.7071 0.7071 -222.6202 340.6915)' style='fill:white;' width='65.545' height='262.18'/%3E%3Crect x='266.988' y='308.153' transform='matrix(0.7071 0.7071 -0.7071 0.7071 398.3889 -83.3116)' style='fill:white;' width='65.544' height='262.179'/%3E%3C/g%3E%3C/svg%3E";
-var img = document.createElement('img');
-img.src = deleteIcon;
-
-//custom controlls
-fabric.Object.prototype.transparentCorners = false;
-fabric.Object.prototype.cornerColor = 'blue';
-fabric.Object.prototype.cornerStyle = 'circle';
-
 export default {
   data() {
     return {
@@ -4848,4 +3638,1215 @@ function getDefaultColor(){
   },
 
 };
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////Side menu
+/*
+
+横メニュー用
+
+*/
+
+
+
+function sm_button(_bntID){
+}
+
+
+function initSideMenu(){
+    
+}
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////Map edit script
+const images = [
+  "./images/rect.png",
+  "./images/line.png",
+  "./images/space.png",
+  "./images/machine.png",
+  "./images/text.png",
+  "./images/machines.png",
+];
+
+
+var canvasContainer = document.getElementById("main");
+///Uncomment
+// canvasContainer.addEventListener("dragover", handleDragOver, false);
+// canvasContainer.addEventListener("drop", handleDrop, false);
+
+// イメージの配置を調整する関数 (side menu)
+function adjustImageLayout() {
+    const sidebar = document.getElementById("sidebar");
+    const sidebarWidth = sidebar.offsetWidth; // サイドバーの横幅
+    const sidebarHeight = sidebar.offsetHeight; // サイドバーの縦幅
+    const imageCount = images.length; // イメージの個数
+  
+    const imageContainer = sidebar.querySelector(".d-flex");
+    imageContainer.innerHTML = ""; // 一度中身をクリア
+  
+    const imageWidth = sidebarWidth - 100; // イメージの横幅
+    const imageHeight = sidebarHeight / imageCount - 30; // イメージの縦幅
+  
+    for (let i = 0; i < imageCount; i++) {
+      const image = document.createElement("img");
+      image.src = images[i];
+      image.classList.add("mb-3", "img-fluid");
+      image.setAttribute("draggable", true);
+      image.style.width = `${imageWidth}px`;
+      image.style.height = `${imageHeight}px`;
+      image.id = "SIDE_MENU_ImageID_" + i;
+      console.log(image);
+      imageContainer.appendChild(image);
+  
+      image.addEventListener("dragstart", handleDragStart, false);
+      image.addEventListener("dragend", handleDragEnd, false);
+      image.addEventListener("drag", handleDrag, false);
+    }
+    /*
+      var dragableObjects = document.querySelectorAll("img");
+      [].forEach.call(dragableObjects, function (dragableObject) {
+        dragableObject.addEventListener("dragstart", handleDragStart, false);
+        dragableObject.addEventListener("dragend", handleDragEnd, false);
+        dragableObject.addEventListener("drag", handleDrag, false);
+      });
+    */
+  }
+  
+
+  
+  function handleDragStart(e) {
+    console.log("handle Drag Start");
+    var target = e.target;
+    e.dataTransfer.setData("text", target.id);
+    target.style.opacity = "0.4";
+  }
+  
+  function handleDragEnd(e) {
+    var target = e.target;
+    target.style.opacity = "1.0";
+    /*
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", "dialog.html", true);
+    xhr.onload = function () {
+      if (xhr.status === 200) {
+        // 取得したダイアログのコンテンツをモーダル内に挿入
+        var dialogContent = xhr.responseText;
+        var modalContent = document.querySelector(
+          "#staticBackdrop .modal-content"
+        );
+        modalContent.innerHTML = dialogContent;
+        // モーダルを表示
+        var modal = new bootstrap.Modal(
+          document.getElementById("staticBackdrop")
+        );
+        modal.show();
+      }
+    };
+    xhr.send();
+  */
+  }
+  
+  function handleDrag(e) {}
+  
+  function handleDragOver(e) {
+    // デフォルトの動作をキャンセル
+    e.preventDefault();
+  }
+  
+  function handleDrop(e) {
+    // デフォルトの動作をキャンセル
+    e.preventDefault();
+  
+    // ドロップ位置を取得
+    //  console.log(e);
+    //  console.log(e.target);
+    var x = Math.round(e.layerX / canvasScale / grid) * grid;
+    var y = Math.round(e.layerY / canvasScale / grid) * grid;
+  
+    // ドラッグ対象のオブジェクトのデータを取得
+    var tmp_id = e.dataTransfer.getData("text");
+    console.log("drop_id1:" + tmp_id);
+  
+    if (!tmp_id.match(/SIDE_MENU_ImageID_/)) {
+      return;
+    }
+    let id = tmp_id.replace("SIDE_MENU_ImageID_", "");
+    console.log("drop_id2:" + id);
+    switch (id) {
+      case "0": //
+        {
+          var _rect = addBox(
+            x,
+            y,
+            grid * 8,
+            grid * 8,
+            getDefaultColor(),
+            "#000000"
+          );
+          canvas.add(_rect);
+          addGameObject(_rect, ObjectType.BOX, 0);
+        }
+        break;
+      case "1": //
+        {
+          var x1 = x + grid * 4;
+          var y1 = y - grid * 4;
+          var x2 = x - grid * 4;
+          var y2 = y + grid * 4;
+          let _lineArray = addLine(x1, y1, x2, y2);
+          /*
+          var _itexts = [];
+          _itexts.push(_lineArray[0]);
+          _itexts.push(_lineArray[1]);
+          _itexts.push(_lineArray[2]);
+          var _group = new fabric.Group(_itexts);
+          canvas.add(_group);
+          addGameObject(_group,ObjectType.LINE,0);
+  */
+  
+          canvas.add(_lineArray[0]);
+          canvas.add(_lineArray[1]);
+          canvas.add(_lineArray[2]);
+          addGameObject(_lineArray[0], ObjectType.LINE, 0);
+        }
+        break;
+      case "2": //
+        {
+          var _rect = addSpaceBox(
+            x,
+            y,
+            grid * 8,
+            grid * 8,
+            getDefaultColor(),
+            "#000000"
+          );
+          canvas.add(_rect);
+          addGameObject(_rect, ObjectType.SPACE_BOX, 0);
+        }
+        break;
+      case "3": //
+        {
+          var _rect = addMachineBox(
+            x,
+            y,
+            grid * 8,
+            grid * 8,
+            getDefaultColor(),
+            "#000000",
+            ""
+          );
+          canvas.add(_rect);
+          addGameObject(_rect, ObjectType.MACHINE_BOX, 0);
+          addMachineBoxDialog(_rect);
+        }
+        break;
+      case "4": //
+        {
+          modalTargetObject = { x: x, y: y };
+          addTextDialog();
+        }
+        break;
+      case "5": //
+        {
+          modalTargetObject = { x: x, y: y };
+          addMultiMachineDialog();
+        }
+        break;
+    }
+  
+    /*
+  // 複数配置?
+    const rectWidth = grid * 8;
+    const rectHeight = grid * 8;
+    const rectSpacing = 0;
+    const rectColumns = 1;
+    const rectRows = 1;
+    const rects = [];
+    for (let row = 0; row < rectRows; row++) {
+      for (let col = 0; col < rectColumns; col++) {
+        const left = x + col * (rectWidth + rectSpacing);
+        const top = y + row * (rectHeight + rectSpacing);
+  
+        const rect = new fabric.Rect({
+          left: left,
+          top: top,
+          width: grid * 8,
+          height: grid * 8,
+          fill: "#FCAF17",
+          originX: "center",
+          originY: "center",
+          stroke: "#ff0000",
+          strokeWidth: 2,
+        });
+        rect.on("moving", function (e) {
+          rect.set({
+            left: Math.round(rect.left / grid) * grid,
+            top: Math.round(rect.top / grid) * grid,
+          });
+        });
+  
+        // anime test
+        var cnt = 0;
+        const timeID = setInterval(animateRandom, 1000);
+        function animateRandom(){
+          if((cnt&1) == 0){
+            rect.set({fill:"#ff0000"});
+          }else {
+            rect.set({fill:"#ffffff"});
+          }
+          cnt++;
+          canvas.requestRenderAll();
+          if(cnt >= 10){
+            clearInterval(timeID);
+          }
+        }
+        // aa
+        // canvas上にrectオブジェクトを配置
+        canvas.add(rect);
+        rects.push(rect);
+      }
+    }
+    canvas.setActiveObject(rects[0]);
+  */
+  }
+  
+  
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////Setting data
+
+// 設定画面データ
+
+var settingMenuData = {
+    setting_01: false,
+    setting_02: false,
+    setting_03: false,
+    setting_04: false,
+}
+
+
+function initSettingData(){
+    console.log("**** setting param init ****");
+}
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////Fabric function
+/*
+
+fabric生成関連
+
+*/
+
+
+// box
+function addBox(_xx, _yy, _ww, _hh, _fill, _stroke) {
+    var control_param = fabric.Object.prototype.controls;
+    control_param.mtr.visible = false; // mtrは回転ポイントの名前
+    control_param.bl.visible = true; // blは左下のコントロールポイントの名前
+    control_param.br.visible = true; // brは右下のコントロールポイントの名前
+    control_param.mb.visible = true; // mbは下中央のコントロールポイントの名前
+    control_param.ml.visible = true; // mlは左中央のコントロールポイントの名前
+    control_param.mr.visible = true; // mrは右中央のコントロールポイントの名前
+    control_param.mt.visible = true; // mtは上中央のコントロールポイントの名前
+    control_param.tl.visible = true; // tlは左上のコントロールポイントの名前
+    control_param.tr.visible = true; // trは右上のコントロールポイントの名前
+
+    var _rect = new fabric.Rect({
+        idx: -1,
+        left: _xx,
+        top: _yy,
+        fill: _fill,
+        width: _ww,
+        height: _hh,
+        originX: 'left',
+        originY: 'top',
+        borderColor: 'red',
+        controls: control_param,
+        lockRotation: true,
+        strokeWidth: 1,
+        stroke: _stroke
+    });
+    /*
+        _rect.on("moving",function(e){
+    //        console.log(_rect);
+            _rect.set({
+                left: Math.round(_rect.left / grid) * grid,
+                top: Math.round(_rect.top / grid) * grid
+            });
+        });
+    */
+    /*
+        _rect.on("scaling",function(e){
+            console.log("scaling...?");
+            var _xx2 = Math.round(_rect.left / grid) * grid;
+            var _hh2 = Math.round(_rect.top / grid) * grid;
+            var _ww2 = Math.round(_rect.scaleX * _rect.width / grid) * grid;
+            var _hh2 = Math.round(_rect.scaleY * _rect.height / grid) * grid;
+            _rect.set({
+                left: _xx2,
+                right: _hh2,
+                width: _ww2,
+                height: _hh2,
+                scaleX: 1.0,
+                scaleY: 1.0,
+            });
+            canvas.requestRenderAll();
+        });
+    */
+    /*
+        _rect.on("scaled",function(e){
+            console.log("scaled...?");
+        });
+    */
+    return (_rect);
+};
+
+function addNameBox(_xx, _yy, _ww, _hh, _fill, _stroke) {
+    var control_param = fabric.Object.prototype.controls;
+    control_param.mtr.visible = false; // mtrは回転ポイントの名前
+    control_param.bl.visible = true; // blは左下のコントロールポイントの名前
+    control_param.br.visible = true; // brは右下のコントロールポイントの名前
+    control_param.mb.visible = true; // mbは下中央のコントロールポイントの名前
+    control_param.ml.visible = true; // mlは左中央のコントロールポイントの名前
+    control_param.mr.visible = true; // mrは右中央のコントロールポイントの名前
+    control_param.mt.visible = true; // mtは上中央のコントロールポイントの名前
+    control_param.tl.visible = true; // tlは左上のコントロールポイントの名前
+    control_param.tr.visible = true; // trは右上のコントロールポイントの名前
+
+    var _rect = new fabric.Rect({
+        idx: -1,
+        left: _xx,
+        top: _yy,
+        fill: _fill,
+        width: _ww,
+        height: _hh,
+        originX: 'left',
+        originY: 'top',
+        borderColor: 'red',
+        controls: control_param,
+        lockRotation: true,
+        strokeWidth: 1,
+        stroke: _stroke
+    });
+    return (_rect);
+};
+
+// box
+function addSpaceBox(_xx, _yy, _ww, _hh, _fill, _stroke) {
+    var control_param = fabric.Object.prototype.controls;
+    control_param.mtr.visible = false; // mtrは回転ポイントの名前
+    control_param.bl.visible = true; // blは左下のコントロールポイントの名前
+    control_param.br.visible = true; // brは右下のコントロールポイントの名前
+    control_param.mb.visible = true; // mbは下中央のコントロールポイントの名前
+    control_param.ml.visible = true; // mlは左中央のコントロールポイントの名前
+    control_param.mr.visible = true; // mrは右中央のコントロールポイントの名前
+    control_param.mt.visible = true; // mtは上中央のコントロールポイントの名前
+    control_param.tl.visible = true; // tlは左上のコントロールポイントの名前
+    control_param.tr.visible = true; // trは右上のコントロールポイントの名前
+
+    var _rect = new fabric.Rect({
+        idx: -1,
+        left: _xx,
+        top: _yy,
+        fill: _fill,
+        width: _ww,
+        height: _hh,
+        originX: 'left',
+        originY: 'top',
+        borderColor: 'red',
+        lockRotation: true,
+        strokeWidth: 1,
+        stroke: _stroke
+    });
+
+    var _xx2 = _xx;
+    var _yy2 = _yy;
+    var _line1 = new fabric.Line(
+        [_xx2, _yy2, _xx2 + _ww, _yy2 + _hh],
+        {
+            type: 'line',
+            stroke: '#202020',
+            originX: 'left',
+            originY: 'top',
+            borderColor: 'red',
+            strokeWidth: 1
+        });
+
+    var _line2 = new fabric.Line(
+        [_xx2 + _ww, _yy2, _xx2, _yy2 + _hh],
+        {
+            type: 'line',
+            stroke: '#202020',
+            originX: 'left',
+            originY: 'top',
+            borderColor: 'red',
+            strokeWidth: 1
+        });
+
+    var _itexts = [_rect, _line1, _line2];
+    var _group = new fabric.Group(_itexts);
+    _group.set({
+        borderColor: 'red',
+        controls: control_param
+    });
+
+    return (_group);
+};
+
+
+// box
+function addMachineBox(_xx, _yy, _ww, _hh, _fill, _stroke, _text2) {
+    var control_param = fabric.Object.prototype.controls;
+    control_param.mtr.visible = false; // mtrは回転ポイントの名前
+    control_param.bl.visible = false; // blは左下のコントロールポイントの名前
+    control_param.br.visible = false; // brは右下のコントロールポイントの名前
+    control_param.mb.visible = false; // mbは下中央のコントロールポイントの名前
+    control_param.ml.visible = false; // mlは左中央のコントロールポイントの名前
+    control_param.mr.visible = false; // mrは右中央のコントロールポイントの名前
+    control_param.mt.visible = false; // mtは上中央のコントロールポイントの名前
+    control_param.tl.visible = false; // tlは左上のコントロールポイントの名前
+    control_param.tr.visible = false; // trは右上のコントロールポイントの名前
+
+    var _rect = new fabric.Rect({
+        idx: -1,
+        colorTimeID: null,
+        left: _xx,
+        top: _yy,
+        fill: _fill,
+        width: _ww,
+        height: _hh,
+        originX: 'left',
+        originY: 'top',
+        lockRotation: true,
+        strokeWidth: 1,
+        controls: control_param,
+        stroke: _stroke
+    });
+    let _text = new fabric.IText(_text2, {
+        left: _xx + (_ww / 2),
+        top: _yy + (_hh / 2),
+        width: _ww,
+        height: _hh,
+        stroke: 'blue',
+        fontSize: 10,
+        strokeWidth: 0,
+        editingBorderColor: 'black',
+        angle: 0,
+        controls: control_param,
+        textAlign: 'center',
+        originX: 'center',
+        originY: 'center'
+    });
+
+    var _itexts;
+
+    if(gameMode == GameMode.MODE_MACHINE_SET){
+        var _rect2 = new fabric.Rect({
+            colorTimeID: null,
+            left: _xx,
+            top: _yy + (_hh - 20),
+            fill: "#ff0000",
+            width: _ww,
+            height: 20,
+            originX: 'left',
+            originY: 'top',
+            controls: control_param,
+            lockRotation: true,
+            strokeWidth: 1,
+            stroke: _stroke
+        });
+
+        let _text2 = new fabric.IText("未割付", {
+            left: _xx + (_ww / 2),
+            top: _yy + (_hh - 10),
+            width: _ww,
+            height: _hh,
+            stroke: 'blue',
+            fontSize: 10,
+            strokeWidth: 0,
+            editingBorderColor: 'black',
+            angle: 0,
+            controls: control_param,
+            textAlign: 'center',
+            originX: 'center',
+            originY: 'center'
+        });
+    
+        _itexts = [_rect, _text, _rect2,_text2];
+    }else { //島図製作中は必要ない
+        _itexts = [_rect, _text];
+
+    }
+
+
+    var _group = new fabric.Group(_itexts);
+    _group.set({
+        borderColor: 'red',
+        controls: control_param
+    });
+
+    return (_group);
+};
+
+
+/*
+// line 
+function addLineOLD(){
+    console.log("adLine2");
+
+    var line = new fabric.Line([300, 200, 400, 400], {
+      stroke: 'red',
+      strokeWidth: 10,
+      selectable: true,
+      evented: true,
+      hasControls: true,
+      hasBorders: true,
+    });
+    canvas.add(line);
+    
+    // 頂点をマウスでドラッグして変更する
+    line.on('mousedown', function (options) {
+      if (options.target && options.target.type === 'line') {
+        var pointer = canvas.getPointer(options.e);
+        var activeObject = options.target;
+        console.log(activeObject);
+        var activeObjectCoords = activeObject.oCoords;
+        console.log(activeObjectCoords);
+        var xDiff = pointer.x - activeObjectCoords.tl.x;
+        var yDiff = pointer.y - activeObjectCoords.tl.y;
+        canvas.on('mouse:move', function (options) {
+          var pointer = canvas.getPointer(options.e);
+          activeObject.set({
+            x1: pointer.x - xDiff,
+            y1: pointer.y - yDiff,
+            x2: pointer.x + (activeObjectCoords.br.x - activeObjectCoords.tr.x) - xDiff,
+            y2: pointer.y + (activeObjectCoords.br.y - activeObjectCoords.tr.y) - yDiff,
+          });
+          line.setCoords();
+          canvas.renderAll();
+        });
+        canvas.on('mouse:up', function () {
+          canvas.off('mouse:move');
+          canvas.off('mouse:up');
+        });
+      }
+    });
+};
+*/
+
+
+// テスト中だけどこっちが正式版になる予定
+function addLine(_x1, _y1, _x2, _y2) {
+    console.log("addLine");
+    //    const element = document.querySelector('.scrollable');
+    var x01 = _x1;
+    var y01 = _y1;
+    var x02 = _x2;
+    var y02 = _y2;
+    var control_param = fabric.Object.prototype.controls;
+    control_param.mtr.visible = false; // mtrは回転ポイントの名前
+    control_param.bl.visible = false; // blは左下のコントロールポイントの名前
+    control_param.br.visible = false; // brは右下のコントロールポイントの名前
+    control_param.mb.visible = false; // mbは下中央のコントロールポイントの名前
+    control_param.ml.visible = false; // mlは左中央のコントロールポイントの名前
+    control_param.mr.visible = false; // mrは右中央のコントロールポイントの名前
+    control_param.mt.visible = false; // mtは上中央のコントロールポイントの名前
+    control_param.tl.visible = false; // tlは左上のコントロールポイントの名前
+    control_param.tr.visible = false; // trは右上のコントロールポイントの名前
+    var _line = new fabric.Line(
+        [x01, y01, x02, y02],
+        {
+            type: 'line',
+            stroke: '#202020',
+            originX: 'left',
+            originY: 'top',
+            borderColor: '#ffffff00',
+            controls: control_param,
+            strokeWidth: 2
+        });
+    var _circle1 = new fabric.Circle({
+        //        NoDelete:true,
+        parentObj: _line,
+        left: x01,
+        top: y01,
+        fill: '#000000',
+        radius: 20,
+        originX: 'center',
+        originY: 'center',
+        strokeWidth: 2,
+        stroke: "#000000",
+        borderColor: '#00000000',
+        controls: control_param
+    });
+    var _circle2 = new fabric.Circle({
+        //        NoDelete:true,
+        parentObj: _line,
+        left: x02,
+        top: y02,
+        fill: '#000000',
+        radius: 20,
+        originX: 'center',
+        originY: 'center',
+        strokeWidth: 2,
+        borderColor: '#00000000',
+        controls: control_param
+    });
+    _line.on('moving', function (e) {
+        //        console.log(_line);
+        //        console.log(""+(_line.lineCoords.tl.x-_line.x1)+","+(_line.lineCoords.tl.y-_line.y1));
+        _line.set({
+            left: Math.round(_line.left / grid) * grid,
+            top: Math.round(_line.top / grid) * grid
+        });
+
+        _line.setCoords();
+
+        var _xx1 = _line.aCoords.tl.x;
+        var _yy1 = _line.aCoords.tl.y;
+        var _xx2 = _line.aCoords.br.x;
+        var _yy2 = _line.aCoords.br.y;
+        if (((_line.x1 > _line.x2) && (_line.y1 > _line.y2))) {
+
+        } else if ((_line.x1 > _line.x2)) {
+            _xx1 = _line.aCoords.tr.x;
+            _xx2 = _line.aCoords.bl.x;
+            _yy1 = _line.aCoords.tr.y;
+            _yy2 = _line.aCoords.bl.y;
+        } else if (_line.y1 > _line.y2) {
+            _xx1 = _line.aCoords.tr.x;
+            _xx2 = _line.aCoords.bl.x;
+            _yy1 = _line.aCoords.tr.y;
+            _yy2 = _line.aCoords.bl.y;
+        }
+        _circle1.set({
+            left: _xx1,
+            top: _yy1
+        });
+        _circle2.set({
+            left: _xx2,
+            top: _yy2
+        });
+        _circle1.setCoords();
+        _circle2.setCoords();
+        canvas.requestRenderAll();
+    });
+    _circle1.on('moving', function (e) {
+        //        console.log("_circle1");
+        _circle1.set({
+            left: Math.round(_circle1.left / grid) * grid,
+            top: Math.round(_circle1.top / grid) * grid
+        });
+        _circle1.setCoords();
+        /*
+                var _lx1 = _circle1.left;
+                var _ly1 = _circle1.top;
+                var _lx2 = _circle2.left;
+                var _ly2 = _circle2.top;
+                if (_lx1 < _lx2) {
+                    [_lx1, _lx2] = [_lx2, _lx1];
+                    [_ly1, _ly2] = [_ly2, _ly1];
+                }
+                if (_ly1 < _ly2) {
+                    [_lx1, _lx2] = [_lx2, _lx1];
+                    [_ly1, _ly2] = [_ly2, _ly1];
+                }
+                _line.set({
+                    x1: _lx1,
+                    y1: _ly1,
+                    x2: _lx2,
+                    y2: _ly2
+                });
+        */
+        _line.set({
+            x1: _circle1.left,
+            y1: _circle1.top,
+            x2: _circle2.left,
+            y2: _circle2.top
+        });
+        _line.setCoords();
+        canvas.requestRenderAll();
+    });
+    _circle2.on('moving', function (e) {
+        //        console.log("_circle2");
+        _circle2.set({
+            left: Math.round(_circle2.left / grid) * grid,
+            top: Math.round(_circle2.top / grid) * grid
+        });
+        _circle2.setCoords();
+        _line.set({
+            x1: _circle1.left,
+            y1: _circle1.top,
+            x2: _circle2.left,
+            y2: _circle2.top
+        });
+        _line.setCoords();
+        canvas.requestRenderAll();
+    });
+
+    //    canvas.add(_circle1);
+    //    canvas.add(_circle2);
+    //    canvas.add(_line);
+    _line.set({         //管理者が居ない玉…要管理方法…
+        circle1: _circle1,
+        circle2: _circle2,
+    });
+
+    return ([_line, _circle1, _circle2]);
+};
+
+
+
+function addIText(str2, _xx, _yy, _fontSize) {
+    var control_param = fabric.Object.prototype.controls;
+    control_param.mtr.visible = false; // mtrは回転ポイントの名前
+    control_param.bl.visible = true; // blは左下のコントロールポイントの名前
+    control_param.br.visible = true; // brは右下のコントロールポイントの名前
+    control_param.mb.visible = false; // mbは下中央のコントロールポイントの名前
+    control_param.ml.visible = false; // mlは左中央のコントロールポイントの名前
+    control_param.mr.visible = false; // mrは右中央のコントロールポイントの名前
+    control_param.mt.visible = false; // mtは上中央のコントロールポイントの名前
+    control_param.tl.visible = true; // tlは左上のコントロールポイントの名前
+    control_param.tr.visible = true; // trは右上のコントロールポイントの名前
+    let _text = new fabric.IText(str2, {
+        left: _xx,
+        top: _yy,
+        fontSize: _fontSize,
+        stroke: 'black',
+        strokeWidth: 1,
+        backgroundColor: "white",
+        angle: 0,
+//        borderColor: 'red',
+//        editingBorderColor: "blue",
+//        controls: control_param,
+        editable: false,
+        textAlign: 'center',
+        originX: 'left',
+        originY: 'top'
+    });
+    /*
+        let _text = new fabric.Text(str, {
+            left: _xx,
+            top: _yy,
+            fontSize: _fontSize,
+            stroke: 'black',
+            strokeWidth: 1,
+            editingBorderColor: 'green',
+            angle: 0,
+            borderColor:'red',
+            controls: control_param,
+            textAlign: 'center',
+            originX: 'center',
+            originY: 'center'
+        });
+    */
+    return (_text);
+};
+
+
+function addNameIText(str, _xx, _yy, _fontSize) {
+    var control_param = fabric.Object.prototype.controls;
+    control_param.mtr.visible = false; // mtrは回転ポイントの名前
+    control_param.bl.visible = true; // blは左下のコントロールポイントの名前
+    control_param.br.visible = true; // brは右下のコントロールポイントの名前
+    control_param.mb.visible = false; // mbは下中央のコントロールポイントの名前
+    control_param.ml.visible = false; // mlは左中央のコントロールポイントの名前
+    control_param.mr.visible = false; // mrは右中央のコントロールポイントの名前
+    control_param.mt.visible = false; // mtは上中央のコントロールポイントの名前
+    control_param.tl.visible = true; // tlは左上のコントロールポイントの名前
+    control_param.tr.visible = true; // trは右上のコントロールポイントの名前
+
+    let _text = new fabric.IText(str, {
+        left: _xx,
+        top: _yy,
+        fontSize: _fontSize,
+        stroke: 'black',
+        strokeWidth: 1,
+        backgroundColor: "white",
+        angle: 0,
+        borderColor: 'red',
+        editingBorderColor: "blue",
+        controls: control_param,
+        editable: false,
+        textAlign: 'center',
+        originX: 'left',
+        originY: 'top'
+    });
+    return (_text);
+};
+
+
+function addITextGroup(str, _x, _y, _fontSize) {
+    console.log("addITextGroup");
+
+    var control_param = fabric.Object.prototype.controls;
+    control_param.mtr.visible = false; // mtrは回転ポイントの名前
+    control_param.bl.visible = true; // blは左下のコントロールポイントの名前
+    control_param.br.visible = true; // brは右下のコントロールポイントの名前
+    control_param.mb.visible = false; // mbは下中央のコントロールポイントの名前
+    control_param.ml.visible = false; // mlは左中央のコントロールポイントの名前
+    control_param.mr.visible = false; // mrは右中央のコントロールポイントの名前
+    control_param.mt.visible = false; // mtは上中央のコントロールポイントの名前
+    control_param.tl.visible = true; // tlは左上のコントロールポイントの名前
+    control_param.tr.visible = true; // trは右上のコントロールポイントの名前
+
+    var arr = Array.from(str);
+    var ii = 0;
+    var _itexts = [];
+    var xx = 0;
+    var yy = 0;
+
+    var _rect = new fabric.Rect({
+        left: _x,
+        top: _y,
+        width: 1,
+        height: 1,
+        originX: 'center',
+        originY: 'center',
+        fill: "white"
+    });
+    _itexts.push(_rect);
+
+    for (ii = 0; ii < arr.length; ii++) {
+        var ang = 0;
+        var addY = _fontSize;
+        var offX = 0;
+        var offY = 0;
+        var col = "#000000";
+        if (arr[ii] == '\n') {
+            xx -= _fontSize;
+            yy = 0;
+            continue;
+        }
+
+        switch (checkProhibitedChar(arr[ii])) {
+            case 1: //全角記号
+                ang = 90;
+                offX = -1;
+                col = "#0000ff";
+                break;
+            case 2: //全角記号（
+                ang = 90;
+                col = "#0000ff";
+                break;
+            case 3: //全角記号）
+                ang = 90;
+                col = "#0000ff";
+                break;
+
+            case 4: //半角記号
+                ang = 90;
+                col = "#ff0000";
+                //addY = 15;
+                break;
+            case 5: //半角記号(
+                ang = 90;
+                col = "#ff0000";
+                break;
+            case 6: //半角記号)
+                ang = 90;
+                col = "#ff0000";
+                break;
+        }
+
+        let _itext1 = new fabric.IText(arr[ii], {
+            left: _x + xx + offX,
+            top: _y + yy,
+            fill: col,
+            fontFamily: 'sans-serif',
+            centerTransform: true,
+            originX: 'center',          //fontSizeでは計算が合わないから…
+            originY: 'center',          //fontSizeでは計算が合わないから…
+            stroke: 'blue',
+            strokeWidth: 0,
+            angle: ang,
+            backgroundColor: "white",
+            editingBorderColor: 'red',
+            dirty: true,
+            lockUniScaling: true,
+            controls: control_param,
+            fontSize: _fontSize,
+            textDirection: 'ttb' // 縦書きに設定
+        });
+        yy += (addY);
+        _itexts.push(_itext1);
+    }
+
+    var _group = new fabric.Group(_itexts);
+    _group.set({
+        idx: -1,
+        text: str,
+        stroke: 'black',
+        editingBorderColor: 'red',
+        strokeWidth: 1,
+        borderColor: 'red',
+        fill: "red",
+        controls: control_param
+    });
+
+    var _boundingRect = _group.getBoundingRect();
+    console.log(_rect);
+    _rect.set({
+        left: 0,
+        top: 0,
+        width: _boundingRect.width,
+        height: _boundingRect.height,
+    });
+    console.log(_rect);
+
+    //    canvas.add(_group);
+    return (_group);
+};
+
+
+// 正規表現
+function checkProhibitedChar(str) {
+    //                var pattern1 =  /[！-／：-＠［-｀｛-～ー、-〜”’・]+/g;
+    //                var pattern4 =  /[!-/:-@[-`{-~]/g;
+    var ret = 0;
+    var pattern1 = /[！-／：-＠［-｀｛-～ー、-〜”’・]+/g;
+    var pattern2 = /[！-／：-＠［-｀｛-～ー、-〜”’・]+/g;
+    var pattern3 = /[！-／：-＠［-｀｛-～ー、-〜”’・]+/g;
+    var pattern4 = /[!-/:-@[-`{-~]/g;
+    var pattern5 = /[!-/:-@[-`{-~]/g;
+    var pattern6 = /[!-/:-@[-`{-~]/g;
+
+    if (pattern1.test(str)) {   //ただ90回転
+        console.log(str);
+        ret = 1;
+    } else if (pattern2.test(str)) {   //上詰め
+        console.log(str);
+        ret = 2;
+    } else if (pattern3.test(str)) {   //下詰め
+        console.log(str);
+        ret = 3;
+    } else if (pattern4.test(str)) {   //ただ90回転
+        console.log(str);
+        ret = 4;
+    } else if (pattern5.test(str)) {
+        console.log(str);
+        ret = 5;
+    } else if (pattern6.test(str)) {
+        console.log(str);
+        ret = 6;
+    }
+    return (ret);
+};
+
+
+// machine box専用
+// color animation
+function setObjectAnimation(_canvasID, _obj) {
+    //    console.log(_obj);
+    /*
+        const timeID = setInterval(colorAnim, 1000);
+        function colorAnim() {
+            let _rect = _obj._objects.at(0);
+            var cnt = 0;
+            if(_obj.colorTimeCnt){
+                cnt = _obj.colorTimeCnt;
+                _obj.colorTimeCnt++;
+            }
+            if ((cnt & 1) == 0) {
+                _rect.set({ fill: "#ff0000" });
+            } else {
+                _rect.set({ fill: "#ffffff" });
+            }
+            _cnvs.requestRenderAll();           //これを１か所に纏めたい…
+        }
+        _obj.set({ colorTimeID: timeID ,colorTimeCnt:1});
+        return (timeID);
+    */
+    animationObjectList.push({ canvasID: _canvasID, obj: _obj });
+}
+
+function stopObjectAnimation(_obj) {
+    /*
+        if(_obj.colorTimeID){
+            clearInterval(_obj.colorTimeID);
+        }
+    */
+    for (var ii = 0; ii < animationObjectList.length; ii++) {
+        let _obj2 = animationObjectList.at(ii);
+        if (_obj2) {
+            if (_obj2.obj == _obj) {
+                console.log("stop animation hit!");
+                delete animationObjectList[ii];
+                break;
+            }
+        }
+    }
+}
+
+
+function setDisplayPriority(_obj) {
+    _obj.bringToFront();
+    //    canvas.bringToFront(_obj);   //最前面
+    //    canvas.bringForward(_obj);   //+1
+    //    canvas.sendToBack(_obj);     //最奥
+    //    canvas.sendBackwards(_obj);   //-1
+}
+
+
+var animationObjectList = null;
+var animationTimeID = 0;
+var animationTimeCnt = 0;
+
+function initFabricFunction() {
+    animationObjectList = new Array();
+
+    animationTimeID = setInterval(colorAnim2, 1000);
+    function colorAnim2() {
+        var col = "#ffffff";
+        if ((animationTimeCnt & 1) == 0) {
+            col = "#ff0000";
+        }
+        for (var ii = 0; ii < animationObjectList.length; ii++) {
+            let _obj2 = animationObjectList.at(ii);
+            if (_obj2) {
+                let _obj = _obj2.obj;
+                let _rect = _obj._objects.at(0);
+                _rect.set({ fill: col });
+            }
+        }
+        if (animationObjectList.length > 0) {
+            animationTimeCnt++;
+            canvas.requestRenderAll();
+            if (canvas2) {
+                canvas2.requestRenderAll();     //...
+            }
+        }
+    }
+}
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////Machine Set Mode
+
+
+const GameMode = {
+  MODE_MAP_EDIT: 0,     // 島図
+  MODE_MACHINE_SET: 1,  // 遊技機設置
+};
+
+const gameMode = GameMode.MODE_MACHINE_SET;
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////Shared Data
+/*
+
+共有データ
+
+*/
+
+
+
+
+// 1グリッドのpicサイズ
+let grid = 8;
+
+// 島図全体のサイズ(グリッド数)
+const map_width = 300;
+const map_height = 300;
+
+// ?ここに置いていいのか?
+
+// 全体のステータス
+var mainStatus = {
+  floor: "1", //現在のフロア
+  floorID: 1,
+  actionID: 0, //直前のアクション
+
+  lastActionType: 0,
+  lastActionObj: null,
+
+  isSplit: false,   //分割中
+  targetCanvasID: 0,  //分割中先に指定しているオブジェクトがいるcanvas
+};
+
+function initMainStatus() {}
+
+// フロアの情報
+var floorInfo = {
+  //フロアの情報
+  floor: "",
+  floorID: 1,
+};
+
+var floorList = null;
+
+// フロア初期化
+function initFloor() {
+  floorList = new Array();
+
+
+
+  var copyFloor = Object.assign({}, floorInfo);
+  copyFloor.floor = "1F";
+  copyFloor.floorID = 1;
+  floorList.push(copyFloor);
+  copyFloor = Object.assign({}, floorInfo);
+  copyFloor.floor = "2F";
+  copyFloor.floorID = 2;
+  floorList.push(copyFloor);
+  copyFloor = Object.assign({}, floorInfo);
+  copyFloor.floor = "B1";
+  copyFloor.floorID = 3;
+  floorList.push(copyFloor);
+
+  console.log(floorList);
+}
+
+
+
+
+//
+function getFloorList(){
+  return(floorList);
+}
+
+
+
+
+
+//Delete icon
+var deleteIcon = "data:image/svg+xml,%3C%3Fxml version='1.0' encoding='utf-8'%3F%3E%3C!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'%3E%3Csvg version='1.1' id='Ebene_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' width='595.275px' height='595.275px' viewBox='200 215 230 470' xml:space='preserve'%3E%3Ccircle style='fill:%23F44336;' cx='299.76' cy='439.067' r='218.516'/%3E%3Cg%3E%3Crect x='267.162' y='307.978' transform='matrix(0.7071 -0.7071 0.7071 0.7071 -222.6202 340.6915)' style='fill:white;' width='65.545' height='262.18'/%3E%3Crect x='266.988' y='308.153' transform='matrix(0.7071 0.7071 -0.7071 0.7071 398.3889 -83.3116)' style='fill:white;' width='65.544' height='262.179'/%3E%3C/g%3E%3C/svg%3E";
+var img = document.createElement('img');
+img.src = deleteIcon;
+
+//custom controlls
+fabric.Object.prototype.transparentCorners = false;
+fabric.Object.prototype.cornerColor = 'blue';
+fabric.Object.prototype.cornerStyle = 'circle';
 </script>

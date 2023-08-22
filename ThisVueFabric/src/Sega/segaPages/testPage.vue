@@ -36,8 +36,8 @@
   <div class="container-fluid h-100">
     <div class="row h-100">
       <Sidebar />
-      <CanvasA :map_width="map_width" :map_height="map_height" :grid="grid" :GameMode="GameMode" :gameMode="gameMode"
-        :canvas="canvas" :canvas2="canvas2" :canvasScale="canvasScale" :ctx="ctx" :ctx2="ctx2"
+      <CanvasA :map_width="map_width" :map_height="map_height" :grid="grid" :unitScale="unitScale" :GameMode="GameMode" :gameMode="gameMode"
+        :canvas2="canvas2" :canvasScale="canvasScale" :ctx="ctx" :ctx2="ctx2"
         :animationTimeID="animationTimeID" :animationTimeCnt="animationTimeCnt" :floorList="floorList"
         :floorInfo="floorInfo" :gameMachineList="gameMachineList" :newMachineApiData="newMachineApiData"
         :machineGroup="machineGroup" :gameMachineInfo="gameMachineInfo" :GameMachineGroup="GameMachineGroup"
@@ -77,9 +77,9 @@
 
 <script>
 import SegaMap from '../segaComponents/segaMap.vue';
-import Toolbar_button from '../segaComponents/toolbar_button.vue';
 import Stencil_area from '../segaComponents/stencil_area.vue';
 import Sidebar from '../segaComponents/sidebar.vue';
+import Toolbar_button from '../segaComponents/toolbar_button.vue';
 
 import CanvasA from '../segaComponents/canvasA.vue'
 
@@ -94,11 +94,11 @@ import machines_img from '../images/machines.png'
 export default {
 
   components: {
-    Toolbar_button,
     SegaMap,
     Stencil_area,
     Sidebar,
     CanvasA,
+    Toolbar_button,
   },
 
   data() {
@@ -106,12 +106,12 @@ export default {
       map_width: 800,
       map_height: 600,
       grid: 8,
+      unitScale: 1,
       GameMode: {
         MODE_MAP_EDIT: 0,
         MODE_MACHINE_SET: 1
       },
       gameMode: null,
-      canvas: null,
       canvas2: null,
       canvasScale: 1,
       ctx: null,
@@ -548,8 +548,8 @@ export default {
 
 
   created() {
-    // this.gameMode = this.GameMode.MODE_MAP_EDIT; //0
-    this.gameMode = this.GameMode.MODE_MACHINE_SET; //1
+    this.gameMode = this.GameMode.MODE_MAP_EDIT; //0
+    //this.gameMode = this.GameMode.MODE_MACHINE_SET; //1
   },
 
 
