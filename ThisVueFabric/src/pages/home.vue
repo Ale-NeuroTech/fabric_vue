@@ -3,6 +3,7 @@
     <div id="app">
         <button @click="goToMap">Fabric demo</button>
         <button @click="goToSega">Sega demo</button>
+        <button @click="goToIndex">Index</button>
       </div>
     </template>
     
@@ -17,6 +18,9 @@ export default {
     },
     goToSega() {
       this.$router.push("/segasamy");
+    },
+    goToIndex() {
+      this.$router.push("/index");
     },
   },
 };

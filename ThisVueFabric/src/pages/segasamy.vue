@@ -1,19 +1,19 @@
 <template>
     <div>
-        <FabricCanvas />
+        <SegaCanvas />
     </div>
 </template>
 
 <script>
-import FabricCanvas from '../components/segaCanvas.vue';
+import SegaCanvas from '../components/segaCanvas.vue';
 
 export default {
   components: {
-    FabricCanvas,
+    SegaCanvas,
 },
   methods: {
     irAFabric() {
-      this.$router.push('/segasamy');
+      this.$router.push('/map');
     }
   }
 }

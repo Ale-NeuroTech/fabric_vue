@@ -1,0 +1,82 @@
+.color_grid {
+    display: color_grid;
+    margin-left: auto;
+    margin-right: auto;
+    width: 250px;
+    background: #fff;
+  }
+  
+  .color_grid__item:nth-child(1) {
+    background: #f8bbd0;
+    width: 80px;
+    height: 80px;
+  }
+  
+  .color_grid__item:nth-child(2) {
+    background: #d1c4e9;
+    width: 80px;
+    height: 80px;
+  }
+  
+  .color_grid__item:nth-child(3) {
+    background: #bbdefb;
+    width: 80px;
+    height: 80px;
+  }
+  
+  .color_grid__item:nth-child(4) {
+    background: #b2ebf2;
+    width: 80px;
+    height: 80px;
+  }
+  
+  .color_grid__item:nth-child(5) {
+    background: #e6ee9c;
+    width: 80px;
+    height: 80px;
+  }
+  
+  .color_grid__item:nth-child(6) {
+    background: #DCEDC8;
+    width: 80px;
+    height: 80px;
+  }
+  
+  .color_grid__item:nth-child(7) {
+    background: #FFF9C4;
+    width: 80px;
+    height: 80px;
+  }
+  
+  .color_grid__item:nth-child(8) {
+    background: #FFCCBC;
+    width: 80px;
+    height: 80px;
+  }
+  
+  .color_grid__item:nth-child(9) {
+    background: #F8BBD0;
+    width: 80px;
+    height: 80px;
+  }
+  
+  .color_grid__item:nth-child(10) {
+    background: #F8BBD0;
+    width: 80px;
+    height: 80px;
+  }
+  
+  .color_grid__item:nth-child(11) {
+    background: #F8BBD0;
+    width: 80px;
+    height: 80px;
+  }
+  
+  .color_grid__item:nth-child(12) {
+    background: #F8BBD0;
+    width: 80px;
+    height: 80px;
+  }
+  
+  
+  
