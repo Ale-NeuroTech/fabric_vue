@@ -61,9 +61,11 @@ export default {
             canvas: null,
             canvas2: null,
             animationObjectList: [],
-            
             canvasWidth: this.map_width * this.grid * this.unitScale,
             canvasHeight: this.map_width * this.grid * this.unitScale,
+            animationTimeCnt: 0,
+            modalDialog: null,
+            modalTargetObject: null, //メニュー対象のobject
         };
     },
 
@@ -122,6 +124,8 @@ export default {
         },
         //////////
         initCanvas: function () {
+            const self = this;
+
             this.canvas = new fabric.Canvas("canvas_view");
             console.log("this.gameMode");
             console.log(this.gameMode);
@@ -174,13 +178,13 @@ export default {
                             lockMovementY: true,
                             lockUniScaling: false,
                         }
-                        )
-                        );
-                        this.canvas.add(
-                            new fabric.Line(
-                                [this.stencilMenuWidth, i * this.grid, this.stencilMenuWidth + this.canvasWidth, i * this.grid],
-                                {
-                                    type: "line",
+                    )
+                );
+                this.canvas.add(
+                    new fabric.Line(
+                        [this.stencilMenuWidth, i * this.grid, this.stencilMenuWidth + this.canvasWidth, i * this.grid],
+                        {
+                            type: "line",
                             stroke: "#ccc",
                             grid_line: true,
                             selectable: false,
@@ -191,8 +195,8 @@ export default {
                             lockMovementY: true,
                             lockUniScaling: false,
                         }
-                        )
-                        );
+                    )
+                );
             }
             if (this.gameMode == "1") {
                 for (var i = 0; i < this.canvasWidth / this.grid; i++) {
@@ -239,9 +243,8 @@ export default {
             }
 
             // object 移動中
-            const objectMoving = (_cnvs, options) => {
+            const objectMoving = (_canvas, options) => {
                 // この判定の方法でいいのか?
-                //    console.log(options.target);
 
                 if (options.target._objects) {
                     //      console.log("objects:moving");
@@ -260,7 +263,7 @@ export default {
                         left: Math.round(_obj.left / this.grid) * this.grid,
                         top: Math.round(_obj.top / this.grid) * this.grid,
                     });
-                    this.cnvs.requestRenderAll();
+                    self.canvas.requestRenderAll();
                 } else {
                     //      console.log("object:moving");
                     var _obj = options.target;
@@ -268,7 +271,7 @@ export default {
                         left: Math.round(_obj.left / this.grid) * this.grid,
                         top: Math.round(_obj.top / this.grid) * this.grid,
                     });
-                    this.cnvs.requestRenderAll();
+                    self.canvas.requestRenderAll();
                 }
                 this.setTargetObjectAction(10);
             }
@@ -321,7 +324,7 @@ export default {
                     _obj.top = rewindObject.top;
 
                     _obj.setCoords();
-                    this.canvas.requestRenderAll();
+                    self.canvas.requestRenderAll();
                 }
             }
 
@@ -347,7 +350,7 @@ export default {
                     for (var ii = 0; ii < _obj._objects.length; ii++) {
                         var _obj3 = _obj.item(ii);
                         var idx = _obj3.idx;
-                        if (this.checkGameObjectTypeMACHINE_BOX(idx)) {
+                        if (self.checkGameObjectTypeMACHINE_BOX(idx)) {
                             chkF = true;
                             idxList.push(idx);
                         }
@@ -356,7 +359,7 @@ export default {
                         return;
                     }
                 } else {
-                    if (!this.checkGameObjectTypeMACHINE_BOX(_obj.idx)) {
+                    if (!self.checkGameObjectTypeMACHINE_BOX(_obj.idx)) {
                         return;
                     }
 
@@ -369,22 +372,22 @@ export default {
                     //    checkGameObjectCollision(_obj);
                     var _x00 = _obj.left;
                     var _y00 = _obj.top;
-                    var _x01 = _obj.left + _obj.width - (this.grid - 1);
-                    var _y01 = _obj.top + _obj.height - (this.grid - 1);
-                    for (var ii = 0; ii < this.gameObjectList.length; ii++) {
-                        if (this.gameObjectList.at(ii)) {
-                            if (this.gameObjectList.at(ii).obj) {
+                    var _x01 = _obj.left + _obj.width - (self.grid - 1);
+                    var _y01 = _obj.top + _obj.height - (self.grid - 1);
+                    for (var ii = 0; ii < self.gameObjectList.length; ii++) {
+                        if (self.gameObjectList.at(ii)) {
+                            if (self.gameObjectList.at(ii).obj) {
                                 var chkF2 = true;
                                 for (var jj = 0; jj < idxList.length; jj++) { //自分自身は除外
-                                    if (this.gameObjectList.at(ii).obj.idx == idxList.at(jj)) {
+                                    if (self.gameObjectList.at(ii).obj.idx == idxList.at(jj)) {
                                         chkF2 = false;
                                         break;
                                     }
                                 }
 
                                 if (chkF2) {
-                                    var _obj2 = this.gameObjectList.at(ii).obj;
-                                    if (!this.checkGameObjectTypeMACHINE_BOX(_obj2.idx)) {
+                                    var _obj2 = self.gameObjectList.at(ii).obj;
+                                    if (!self.checkGameObjectTypeMACHINE_BOX(_obj2.idx)) {
                                         continue;
                                     }
 
@@ -398,7 +401,7 @@ export default {
                                         console.log(_x10 + "," + _y10 + "," + _x11 + "," + _y11 + ",");
                                         console.log("hit");
                                         console.log(_obj);
-                                        console.log(this.gameObjectList.at(ii));
+                                        console.log(self.gameObjectList.at(ii));
 
                                         _ret = true;
                                         break;
@@ -414,14 +417,14 @@ export default {
             }
 
             // コントローラー形状変化
-            const self = this;
+
             function setControllerType(cnvs) {
 
                 // 遊技台設置
                 if (self.gameMode == "1") {
                     var ctrlF = 0;
                     var _obj = cnvs.getActiveObject();
-                    console.log(_obj);
+                    //console.log(_obj);
                     if (!_obj.idx) {
                         if (_obj._objects) {
                             /* 効果なし？
@@ -438,7 +441,7 @@ export default {
                                 var _obj2 = _obj.item(ii);
                                 if (_obj2.idx) {
                                     var idx = _obj2.idx;
-                                    if (this.checkGameObjectTypeMACHINE_BOX(idx)) {
+                                    if (self.checkGameObjectTypeMACHINE_BOX(idx)) {
                                         ctrlF = 1;
                                         break;
                                     } else if (this.checkGameObjectTypeTEXT(idx)) {
@@ -456,7 +459,7 @@ export default {
                     } else {
                         if (_obj.idx) {
                             var idx = _obj.idx;
-                            if (this.checkGameObjectTypeMACHINE_BOX(idx)) {
+                            if (self.checkGameObjectTypeMACHINE_BOX(idx)) {
                                 ctrlF = 1;
                             }
                         } else if (this.checkGameObjectTypeTEXT(idx)) {
@@ -493,7 +496,7 @@ export default {
 
                     var ctrlF = 0;
                     var _obj = cnvs.getActiveObject();
-                    console.log(_obj);
+                    //console.log(_obj);
                     if (!_obj.idx) {
                         if (_obj._objects) {
                             console.log("group select");
@@ -545,13 +548,13 @@ export default {
                     } else {
                         if (_obj.idx) {
                             var idx = _obj.idx;
-                            if (this.checkGameObjectTypeMACHINE_BOX(idx)) {
+                            if (self.checkGameObjectTypeMACHINE_BOX(idx)) {
                                 ctrlF = 2;
-                            } else if (this.checkGameObjectTypeSPACE_BOX(idx)) {
+                            } else if (self.checkGameObjectTypeSPACE_BOX(idx)) {
                                 ctrlF = 2;
-                            } else if (this.checkGameObjectTypeLINE(idx)) {
+                            } else if (self.checkGameObjectTypeLINE(idx)) {
                                 ctrlF = 2;
-                            } else if (this.checkGameObjectTypeTEXT(idx)) {
+                            } else if (self.checkGameObjectTypeTEXT(idx)) {
                                 if (ctrlF != 2) {
                                     ctrlF = 4;
                                 }
@@ -613,7 +616,7 @@ export default {
                 console.log("selection:created");
                 setObjectPosition(cnvs);
                 setControllerType(cnvs);
-                this.setTargetObjectAction(1); 
+                this.setTargetObjectAction(1);
 
 
                 if (this.gameMode == "1") {
@@ -627,17 +630,17 @@ export default {
                 console.log("selection:updated");
                 setObjectPosition(cnvs);
                 setControllerType(cnvs);
-                this.setTargetObjectAction(2);
+                self.setTargetObjectAction(2);
 
-                if (this.gameMode == "1") {
-                    this.swapMachineStatus();
+                if (self.gameMode == "1") {
+                    self.swapMachineStatus();
                 }
             }
 
             // object 選択解除
             function selectionCleared(_cnvsID, _cnvs) {
                 //console.log("selection:cleared");
-                this.setTargetObjectAction(3);
+                self.setTargetObjectAction(3);
                 resetObjectPosition();
             }
 
@@ -732,11 +735,11 @@ export default {
                         if (_obj._objects) {
                             for (var ii = 0; ii < _obj._objects.length; ii++) {
                                 var _obj3 = _obj.item(ii);
-                                updateGameObjectAt(_obj3.idx, _obj3);
+                                self.updateGameObjectAt(_obj3.idx, _obj3);
                             }
                         }
                     } else {
-                        updateGameObjectAt(_obj.idx, _obj);
+                        self.updateGameObjectAt(_obj.idx, _obj);
                     }
                 }
 
@@ -744,7 +747,7 @@ export default {
             }
 
             function mouseDown(_cnvs, _options) {
-                //    console.log("mouse:down");
+                //console.log("mouse:down");
             }
 
 
@@ -832,7 +835,7 @@ export default {
             // ==========================================
             // canvas2
             // ==========================================
-            if (this.gameMode == "1") { 
+            if (this.gameMode == "1") {
                 this.canvas2.on("object:moving", function (options) {
                     this.mainStatus.targetCanvasID = 1;
                     objectMoving(this.canvas2, options);
@@ -885,9 +888,10 @@ export default {
             this.animationObjectList = new Array();
             console.log(this.animationObjectList);
             this.animationTimeID = setInterval(colorAnim2, 1000);
+
             function colorAnim2() {
                 var col = "#ffffff";
-                if ((this.animationTimeCnt & 1) == 0) {
+                if ((self.animationTimeCnt & 1) == 0) {
                     col = "#ff0000";
                 }
                 for (var ii = 0; ii < self.animationObjectList.length; ii++) {
@@ -901,8 +905,8 @@ export default {
                 if (self.animationObjectList.length > 0) {
                     self.animationTimeCnt++;
                     self.canvas.requestRenderAll();
-                    if (this.canvas2) {
-                        this.canvas2.requestRenderAll();     //...
+                    if (self.canvas2) {
+                        self.canvas2.requestRenderAll();
                     }
                 }
             }
@@ -1211,7 +1215,7 @@ export default {
             //getGameObjectList(mainStatus.floorID);
 
             var ii = 0;
-            for (ii = 0; ii < this.gameObjectList.length; ii++) {
+            for (ii = 0; ii < this.$parent.gameObjectList.length; ii++) {
                 var obj = this.gameObjectList.at(ii);
 
                 if (obj.floorID != _floorID) {  //対象フロアのオブジェクトのみ
@@ -1681,16 +1685,16 @@ export default {
                 borderColor: '#00000000',
                 controls: control_param
             });
+            const self = this; 
             _line.on('moving', function (_e) {
                 //        console.log(_line);
                 //        console.log(""+(_line.lineCoords.tl.x-_line.x1)+","+(_line.lineCoords.tl.y-_line.y1));
                 _line.set({
-                    left: Math.round(_line.left / this.grid) * this.grid,
-                    top: Math.round(_line.top / this.grid) * this.grid
+                    left: Math.round(_line.left / self.grid) * self.grid,
+                    top: Math.round(_line.top / self.grid) * self.grid
                 });
 
                 _line.setCoords();
-
                 var _xx1 = _line.aCoords.tl.x;
                 var _yy1 = _line.aCoords.tl.y;
                 var _xx2 = _line.aCoords.br.x;
@@ -1723,8 +1727,8 @@ export default {
             _circle1.on('moving', function (_e) {
                 //        console.log("_circle1");
                 _circle1.set({
-                    left: Math.round(_circle1.left / this.grid) * this.grid,
-                    top: Math.round(_circle1.top / this.grid) * this.grid
+                    left: Math.round(_circle1.left / self.grid) * self.grid,
+                    top: Math.round(_circle1.top / self.grid) * self.grid
                 });
                 _circle1.setCoords();
                 /*
@@ -1759,8 +1763,8 @@ export default {
             _circle2.on('moving', function (_e) {
                 //        console.log("_circle2");
                 _circle2.set({
-                    left: Math.round(_circle2.left / this.grid) * this.grid,
-                    top: Math.round(_circle2.top / this.grid) * this.grid
+                    left: Math.round(_circle2.left / self.grid) * self.grid,
+                    top: Math.round(_circle2.top / self.grid) * self.grid
                 });
                 _circle2.setCoords();
                 _line.set({
@@ -2124,20 +2128,21 @@ export default {
 
 
             if (this.machine_object_status == "B") {
-                var _cnvs = null;
+                var cnvs = null;
                 if (this.mainStatus.targetCanvasID == 0) {
-                    _cnvs = this.canvas;
+                    cnvs = this.canvas;
                 } else {
-                    _cnvs = this.canvas2;
+                    cnvs = this.canvas2;
                 }
-                var _obj = _cnvs.getActiveObject();
+                var _obj = cnvs.getActiveObject();
                 if (_obj) {
                     if (_obj.idx) {
                         if (this.checkGameObjectTypeMACHINE_BOX(_obj.idx)) {
                             this.stopObjectAnimation(_obj);
-                            updateGameObjectAt_Machine(this.mainStatus.targetCanvasID, _obj.idx, _obj, 0, 0, null);
+                            this.updateGameObjectAt_Machine(this.mainStatus.targetCanvasID, _obj.idx, _obj, 0, 0, null);
                             this.updateGameObjectAt_Color(_obj.idx, _obj, this.getGameObjectColorPalleteID(_obj.idx));
-                            this.cnvs.requestRenderAll();
+                            console.log(cnvs);
+                            cnvs.requestRenderAll();
                         }
                     }
                 }
@@ -2259,7 +2264,7 @@ export default {
             _obj.idx = idx;
 
             if (this.gameMode == "1") {
-                setGameObjectMachineBoxColor(_canvasID, idx);
+                this.setGameObjectMachineBoxColor(_canvasID, idx);
             }
         },
 
@@ -2330,7 +2335,7 @@ export default {
             obj2.colorPalleteID = _col;
 
             let _rect = _obj._objects.at(0);
-            _rect.set({ fill: getColorPallete(_col) });
+            _rect.set({ fill: this.getColorPallete(_col) });
         },
 
         ////////////
@@ -2860,12 +2865,12 @@ export default {
                     clearInterval(_obj.colorTimeID);
                 }
             */
-            for (var ii = 0; ii < animationObjectList.length; ii++) {
-                let _obj2 = animationObjectList.at(ii);
+            for (var ii = 0; ii < this.animationObjectList.length; ii++) {
+                let _obj2 = this.animationObjectList.at(ii);
                 if (_obj2) {
                     if (_obj2.obj == _obj) {
                         console.log("stop animation hit!");
-                        delete animationObjectList[ii];
+                        delete this.animationObjectList[ii];
                         break;
                     }
                 }
@@ -3855,25 +3860,11 @@ export default {
 
 
         ////////////// 一括遊技台追加時のダイアログ表示
-        addTextDialog: function () {
-            var xhr = new XMLHttpRequest();
-            xhr.open("GET", "./dialog/add_text_dialog.html", true);
-            xhr.onload = function () {
-                if (xhr.status === 200) {
-                    // 取得したダイアログのコンテンツをモーダル内に挿入
-                    var dialogContent = xhr.responseText;
-                    var modalContent = document.querySelector(
-                        "#staticBackdrop .modal-content"
-                    );
-                    modalContent.innerHTML = dialogContent;
-                    // モーダルを表示
-                    modalDialog = new bootstrap.Modal(
-                        document.getElementById("staticBackdrop")
-                    );
-                    modalDialog.show();
-                }
-            };
-            xhr.send();
+        addTextDialog: function (_obj) {
+            this.modalTargetObject = _obj;
+            const add_text_dialogURL = '/add_text_dialog';
+            const add_text_dialogFeatures = 'width=500,height=500';
+            window.open(add_text_dialogURL, '_blank', add_text_dialogFeatures);
         },
 
         ////////////// 一括遊技台追加時のダイアログ表示 戻り値
@@ -3915,31 +3906,17 @@ export default {
         },
 
         ////////////// 一括遊技台追加時のダイアログ表示
-        addMultiMachineDialog: function () {
-            var xhr = new XMLHttpRequest();
-            xhr.open("GET", "./dialog/add_multi_machinebox_dialog.html", true);
-            xhr.onload = function () {
-                if (xhr.status === 200) {
-                    // 取得したダイアログのコンテンツをモーダル内に挿入
-                    var dialogContent = xhr.responseText;
-                    var modalContent = document.querySelector(
-                        "#staticBackdrop .modal-content"
-                    );
-                    modalContent.innerHTML = dialogContent;
-                    // モーダルを表示
-                    modalDialog = new bootstrap.Modal(
-                        document.getElementById("staticBackdrop")
-                    );
-                    modalDialog.show();
-                }
-            };
-            xhr.send();
+        addMultiMachineDialog: function (_obj) {
+            this.modalTargetObject = _obj;
+            const add_multi_machinebox_dialogURL = '/add_multi_machinebox_dialog';
+            const add_multi_machinebox_dialogFeatures = 'width=500,height=500';
+            window.open(add_multi_machinebox_dialogURL, '_blank', add_multi_machinebox_dialogFeatures);
         },
 
         ////////////// 遊技BOX追加時ダイアログ表示 戻り値 (ダブルクリック時は別？)
-        addMachineBoxDialogRespons: function (_res) {
+        addMachineBoxDialogRespons: (_res) => {
             if (modalDialog) {
-                let element = document.getElementById("add_machinebox_input_text")
+                let element = document.getElementById("add_machinebox_input_text");
                 console.log(element.value);
                 console.log(modalTargetObject.item(1));
 
@@ -3954,28 +3931,12 @@ export default {
             }
         },
 
-        ////////////// 遊技BOX追加時・ダブルクリック時のダイアログ表示
         addMachineBoxDialog: function (_obj) {
-            modalTargetObject = _obj;
+            this.modalTargetObject = _obj;
 
-            var xhr = new XMLHttpRequest();
-            xhr.open("GET", ".src/sega/segapages/add_machinebox_dialog.html", true);
-            xhr.onload = function () {
-                if (xhr.status === 200) {
-                    // 取得したダイアログのコンテンツをモーダル内に挿入
-                    var dialogContent = xhr.responseText;
-                    var modalContent = document.querySelector(
-                        "#staticBackdrop .modal-content"
-                    );
-                    modalContent.innerHTML = dialogContent;
-                    // モーダルを表示
-                    modalDialog = new bootstrap.Modal(
-                        document.getElementById("staticBackdrop")
-                    );
-                    modalDialog.show();
-                }
-            };
-            xhr.send();
+            const add_machinebox_dialogURL = '/add_machinebox_dialog';
+            const add_machinebox_dialogFeatures = 'width=500,height=500';
+            window.open(add_machinebox_dialogURL, '_blank', add_machinebox_dialogFeatures);
         },
 
         //////////// 
@@ -4025,7 +3986,7 @@ export default {
                         var y1 = y - this.grid * 4;
                         var x2 = x - this.grid * 4;
                         var y2 = y + this.grid * 4;
-                        let _lineArray = addLine(x1, y1, x2, y2);
+                        let _lineArray = this.addLine(x1, y1, x2, y2);
                         /*
                         var _itexts = [];
                         _itexts.push(_lineArray[0]);
@@ -4044,7 +4005,7 @@ export default {
                     break;
                 case "2": //
                     {
-                        var _rect = addSpaceBox(
+                        var _rect = this.addSpaceBox(
                             x,
                             y,
                             this.grid * 8,
@@ -4058,7 +4019,7 @@ export default {
                     break;
                 case "3": //
                     {
-                        var _rect = addMachineBox(
+                        var _rect = this.addMachineBox(
                             x,
                             y,
                             this.grid * 8,
@@ -4069,19 +4030,19 @@ export default {
                         );
                         this.canvas.add(_rect);
                         this.addGameObject(_rect, this.ObjectType.MACHINE_BOX, 0);
-                        addMachineBoxDialog(_rect);
+                        this.addMachineBoxDialog(_rect);
                     }
                     break;
                 case "4": //
                     {
-                        modalTargetObject = { x: x, y: y };
-                        addTextDialog();
+                        this.modalTargetObject = { x: x, y: y };
+                        this.addTextDialog();
                     }
                     break;
                 case "5": //
                     {
-                        modalTargetObject = { x: x, y: y };
-                        addMultiMachineDialog();
+                        this.modalTargetObject = { x: x, y: y };
+                        this.addMultiMachineDialog();
                     }
                     break;
             }
@@ -4350,8 +4311,6 @@ export default {
         //let isSelecting = false;
         let startPoint, endPoint;
         // var canvasScale = 1;
-        var modalDialog = null; //
-        var modalTargetObject = null; //メニュー対象のobject
         //let isCreate = true;
 
         //const newMachine = newMachineApiData;
@@ -4362,9 +4321,7 @@ export default {
         //window.addEventListener("resize", resizeLayout());
 
         // 初回読み込み時にもイメージの配置を調整
-        console.log("test para ver si esta corriendo");
         //window.addEventListener("load", this.init);
-        console.log("test para ver si esta corriendo");
 
 
         // オブジェクト削除
@@ -4374,7 +4331,7 @@ export default {
             // よくない書き方だけどとりあえず…
             if (true) {   //settingにsw何か置く
                 var _obj = this.canvas.getActiveObject();
-                modalTargetObject = _obj;
+                this.modalTargetObject = _obj;
                 this.deleteObjectDialog();
             } else {
                 var _obj = this.canvas.getActiveObject();
